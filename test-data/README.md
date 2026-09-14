@@ -12,13 +12,6 @@
 | **合计** | **150** | **675** | **825 条** |
 
 > 表头不计入条数。825 条数据即 825 组测试输入。
->
-> **注意内嵌换行**：有 8 条数据的字段值里包含换行符
-> （如 `name\nnewline`、`https://api.example.com\n/v1`、`/health\ncheck`），
-> 因此**按物理行数统计会比真实记录数多 8 条**。
-> 数据驱动脚本必须用 CSV 解析器按记录迭代
-> （Python `csv` 模块、Node `csv-parse` 等），不能 `split('\n')` 按行读，
-> 否则会把 1 条记录拆成 2 条。
 
 ---
 
@@ -82,9 +75,9 @@ test-data/
 
 ## 三、使用方式
 
-数据驱动脚本按行读取 CSV，每行驱动一次完整业务流程。
+数据驱动脚本**逐条读取** CSV，每条数据驱动一次完整业务流程。
 
-**模型上架的调用链**（每行独立执行，跑完即清理）：
+**模型上架的调用链**（每条独立执行，跑完即清理）：
 
 ```
 建 provider  →  建 model  →  调 product/create  →  断言 code  →  清理
@@ -94,10 +87,6 @@ test-data/
 
 - 前 14 列（`providerName` … `tenantIds`）：用例输入
 - 后 4 列（`r_modelTpm`、`r_modelRpm`、`r_tenants`、`r_routeId`）：**预期值**，用于回查校验
-
-**编码要求**：CSV 必须为 **UTF-8 无 BOM**（部分文件当前带 BOM，
-用 VSCode 另存为「UTF-8」而非「UTF-8 with BOM」）。
-若用记事本编辑会引入 BOM，导致首列列名变成 `\ufeffusername`，脚本读不到。
 
 ---
 
