@@ -1,0 +1,2 @@
+"Stage","Mode","Threads","Loops","Planned","Samples","Success","Failures","SuccessRate","ErrorRate","RPS","DurationSeconds","AvgMs","P50Ms","P90Ms","P95Ms","P99Ms","MinMs","MaxMs","Http401","Http403","Http429","Http5xx","Timeouts","Resets","SseIncomplete","EmptyContent","InvalidJson","ClientCpuAvg","ClientCpuPeak","ClientMemoryMinMB","JMeterExitCode"
+"P3","非流式","100","20","2000","1036","866","170","83.5907","16.4093","1.6517","627.249","35227.07","36115","43106","45448","300002","6202","300243","0","0","0","158","12","0","0","0","0","53.03","80","5154","0"

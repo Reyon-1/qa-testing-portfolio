@@ -1,0 +1,26 @@
+{
+  "name": "plugin-browser-openai-bundled-visualize-plugin-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:list": "playwright test --list",
+    "test:ui": "playwright test --ui",
+    "test:model": "playwright test tests/模型",
+    "test:overview": "playwright test tests/概览",
+    "typecheck": "tsc --noEmit",
+    "auth": "playwright test tests/登录/系统登录.spec.ts --headed"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.5.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}

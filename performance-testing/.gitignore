@@ -1,0 +1,20 @@
+# 压测原始明细（体积大，且可能含请求头凭证）
+*.jtl
+
+# JMeter 官方报告模板静态资源（每轮重复生成，如需可重跑压测再生成）
+bower_components/
+
+# 运行日志
+*-jmeter.log
+*-console.log
+
+# 系统与编辑器
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# 凭证（真实密钥请用环境变量注入，不要提交）
+*.env
+.env.local

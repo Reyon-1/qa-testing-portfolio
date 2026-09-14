@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 运营平台 GLM 5.2 API性能压测方案</title>
+<style>
+:root{
+  --page:#f1f4f9; --card:#fff; --card-2:#f8fafc;
+  --line:#e3e9f2; --line-strong:#cdd8e8;
+  --txt:#101828; --txt-2:#4a5568; --txt-3:#8a95a8;
+  --green:#059669; --green-bg:#ecfdf5;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#dc2626; --red-bg:#fef2f2;
+  --blue:#2563eb;
+  --acc:#2563eb; --acc-soft:#eef3fe; --acc-line:#dbe6fb; --acc-grad:linear-gradient(90deg,#2563eb,#0891b2);
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--page);color:var(--txt);line-height:1.78;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.bar{height:4px;background:var(--acc-grad)}
+.top{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--txt-2);
+  font-size:13px;font-weight:600;padding:6px 13px;border-radius:8px;border:1px solid var(--line);
+  background:#fff;transition:.18s}
+.back:hover{color:var(--acc);border-color:var(--acc-line);background:var(--acc-soft)}
+.top-t{margin-left:auto;font-size:12.5px;color:var(--txt-3);font-family:var(--mono)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 80px}
+.hero{padding:48px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero h1{font-size:clamp(24px,3.4vw,34px);font-weight:750;letter-spacing:-.7px;line-height:1.3;color:var(--txt)}
+.hero .sub{color:var(--txt-2);font-size:14.5px;margin-top:12px}
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+.chip{font-size:12.5px;color:var(--txt-2);background:#fff;border:1px solid var(--line);
+  padding:6px 13px;border-radius:8px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.chip b{color:var(--txt);font-weight:650}
+.toc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:34px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px -6px rgba(16,24,40,.1)}
+.toc-t{font-size:12px;font-family:var(--mono);letter-spacing:1.6px;color:var(--acc);
+  text-transform:uppercase;font-weight:700;margin-bottom:12px}
+.toc ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px}
+.toc li a{color:var(--txt-2);text-decoration:none;font-size:13.5px;display:block;padding:6px 10px;
+  border-radius:7px;border-left:2px solid transparent;transition:.16s}
+.toc li a:hover{color:var(--acc);background:var(--acc-soft);border-left-color:var(--acc)}
+article h1{font-size:26px;font-weight:750;margin:40px 0 16px;letter-spacing:-.5px;
+  padding-bottom:12px;border-bottom:2px solid var(--acc-line)}
+article h2{font-size:21px;font-weight:720;margin:38px 0 14px;letter-spacing:-.3px;
+  padding-left:14px;position:relative;scroll-margin-top:70px}
+article h2::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:4px;
+  border-radius:2px;background:var(--acc-grad)}
+article h3{font-size:16.5px;font-weight:700;margin:26px 0 10px;color:var(--txt);scroll-margin-top:70px}
+article h4{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--txt-2)}
+article p{margin:12px 0;color:var(--txt-2);font-size:14.5px}
+article strong{color:var(--txt);font-weight:680}
+article a{color:var(--blue);text-decoration:none;border-bottom:1px solid #c7d9f8}
+article a:hover{border-bottom-color:var(--blue)}
+article hr{border:none;border-top:1px dashed var(--line-strong);margin:34px 0}
+article ul,article ol{margin:12px 0 12px 6px;padding-left:22px;color:var(--txt-2);font-size:14.5px}
+article li{margin:7px 0}
+article li::marker{color:var(--acc)}
+article code{font-family:var(--mono);font-size:12.8px;background:var(--acc-soft);color:var(--acc);
+  padding:1.5px 6px;border-radius:5px;border:1px solid var(--acc-line)}
+article blockquote{background:#fff;border:1px solid var(--line);border-left:4px solid var(--acc);
+  border-radius:12px;padding:16px 22px;margin:18px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+article blockquote p{margin:5px 0;font-size:14px;color:var(--txt-2)}
+article blockquote code{background:#f1f5f9;color:var(--txt-2);border-color:var(--line)}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line);background:#fff;
+  margin:18px 0;box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px -6px rgba(16,24,40,.1)}
+table{width:100%;border-collapse:collapse;font-size:13.2px;min-width:560px}
+thead th{background:var(--card-2);color:var(--txt-2);font-weight:650;text-align:left;
+  padding:12px 15px;font-size:12.5px;letter-spacing:.3px;white-space:nowrap;
+  border-bottom:1px solid var(--line-strong)}
+tbody td{padding:11px 15px;border-bottom:1px solid #eef2f8;color:var(--txt-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f7faff}
+tbody td:first-child{color:var(--txt);font-weight:620}
+td.num{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+tr.row-bad td{background:var(--red-bg)}
+tr.row-bad:hover td{background:#fdeaea}
+tr.row-skip td{background:#f8fafc;color:var(--txt-3)}
+.code-block{background:#0f172a;border-radius:12px;overflow:hidden;margin:18px 0;
+  box-shadow:0 4px 16px -6px rgba(16,24,40,.28)}
+.code-lang{font-family:var(--mono);font-size:11px;color:#7c8ba1;background:#0b1220;
+  padding:7px 16px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #1e293b}
+.code-block pre{margin:0;padding:16px;overflow-x:auto}
+.code-block code{font-family:var(--mono);font-size:12.8px;color:#cbd5e1;background:none;
+  border:none;padding:0;line-height:1.7;white-space:pre}
+footer{border-top:1px solid var(--line);padding:26px 0;text-align:center;color:var(--txt-3);font-size:12.5px}
+footer a{color:var(--blue);text-decoration:none}
+@media(max-width:700px){.wrap,.top-in{padding-left:18px;padding-right:18px}}
+@media print{.top{display:none}.tbl-wrap{box-shadow:none}article h2{page-break-after:avoid}tr{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="bar"></div>
+<div class="top"><div class="top-in">
+  <a class="back" href="../../../压测总结.html">← 返回压测总结</a>
+  <span class="top-t">GLM 5.2 压测方案</span>
+</div></div>
+<div class="wrap">
+  <div class="hero">
+    <h1>AI 运营平台 GLM 5.2 API性能压测方案</h1>
+    <p class="sub">请求口径、max_tokens 取值依据、梯度与两级闸门</p>
+    <div class="chips"><span class="chip">文档日期 <b>2026-09-11</b></span><span class="chip">模型 <b>glm-5.2-test</b></span><span class="chip">读取超时 <b>300 秒</b></span></div>
+  </div>
+  
+  <article><h1 id="h-0">AI 运营平台 GLM 5.2 API性能压测方案</h1>
+<blockquote><p>测试环境：<code>http://198.51.100.10/v1</code>  </p><p>唯一模型：<code>glm-5.2-test</code>  </p><p>工具：Apache JMeter 5.6.3，非GUI模式  </p><p>固定问题：<code>给出一套成都旅游一日游方案，50字左右</code></p></blockquote>
+<h2 id="h-1">请求口径</h2>
+<div class="code-block"><div class="code-lang">json</div><pre><code>{
+  "model": "glm-5.2-test",
+  "messages": [
+    {
+      "role": "user",
+      "content": "给出一套成都旅游一日游方案，50字左右"
+    }
+  ],
+  "temperature": 0.2,
+  "max_tokens": 32768,
+  "stream": false
+}</code></pre></div>
+<p>GLM 5.2会先输出推理Token。实测<code>max_tokens=100</code>和<code>512</code>时推理耗尽上限、正文为空；<code>1024</code>三次预检仍有一次正文为空；<code>2048</code>在25线程校准运行358个样本中出现7次空正文；<code>8192</code>在25线程校准运行482个样本中仍出现3次超长推理导致的空正文。因此正式压力测试采用<code>32768</code>。该参数是输出上限，模型以<code>finish_reason=stop</code>完成时会提前结束，并非每次强制生成32768 Token。</p>
+<p>为避免客户端在极端长推理尚未完成时提前中断，GLM专属JMeter读取超时为300秒；连接超时仍为10秒。超时配置变更只适用于GLM，不修改KIMI历史测试口径。</p>
+<h2 id="h-2">梯度</h2>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th>模式</th><th>线程</th><th>每线程循环</th><th>计划请求</th><th>Ramp-up</th><th>冷却</th></tr></thead><tbody><tr><td>T0</td><td>非流式预检</td><td class="num">1</td><td class="num">3</td><td class="num">3</td><td>1秒</td><td>-</td></tr><tr><td>P1</td><td>非流式</td><td class="num">25</td><td class="num">20</td><td class="num">500</td><td>30秒</td><td>3分钟</td></tr><tr><td>P2</td><td>非流式</td><td class="num">50</td><td class="num">20</td><td class="num">1,000</td><td>60秒</td><td>3分钟</td></tr><tr><td>P3</td><td>非流式</td><td class="num">100</td><td class="num">20</td><td class="num">2,000</td><td>120秒</td><td>4分钟</td></tr><tr><td>P4</td><td>非流式</td><td class="num">200</td><td class="num">30</td><td class="num">6,000</td><td>180秒</td><td>5分钟</td></tr><tr><td>P5</td><td>非流式</td><td class="num">400</td><td class="num">50</td><td class="num">20,000</td><td>300秒</td><td>5分钟</td></tr><tr><td>S1</td><td>流式</td><td class="num">25</td><td class="num">10</td><td class="num">250</td><td>30秒</td><td>3分钟</td></tr><tr><td>S2</td><td>流式</td><td class="num">200</td><td class="num">10</td><td class="num">2,000</td><td>180秒</td><td>4分钟</td></tr><tr><td>S3</td><td>流式</td><td class="num">400</td><td class="num">10</td><td class="num">4,000</td><td>300秒</td><td>2分钟</td></tr><tr><td>T3</td><td>非流式恢复</td><td class="num">1</td><td class="num">10</td><td class="num">10</td><td>1秒</td><td>-</td></tr></tbody></table></div>
+<p>采用两级闸门：当前档总体失败率持续达到30%时立即优雅停止；一档结束后总体失败率或429、5xx、超时/重置、空正文、非法JSON、SSE不完整中的任一类达到10%，则该档判为失稳并禁止继续升级。401/403鉴权错误、压测机持续过载时立即停止。该口径用于模型改名为<code>glm-5.2-test</code>后的续测，不回写历史测试结论。</p>
+<h2 id="h-3">统计口径</h2>
+<p>流式和非流式分开统计。每档记录Samples、成功率、RPS、Avg、P50、P90、P95、P99、Max、Connect、Latency、401、403、429、5xx、超时、重置、空正文、非法JSON和SSE未完成。JMeter普通Latency不能命名为TTFT；真正首Token时间需要平台或供应商分段日志。</p>
+<p>所有结果仅代表“Token平台 + GLM 5.2供应商”的端到端链路。没有平台和供应商服务端监控时，不单凭JMeter结果确定瓶颈归属。</p></article>
+  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../../压测总结.html">返回压测总结</a></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 运营平台 KIMI K3 API 性能压测方案</title>
+<style>
+:root{
+  --page:#f1f4f9; --card:#fff; --card-2:#f8fafc;
+  --line:#e3e9f2; --line-strong:#cdd8e8;
+  --txt:#101828; --txt-2:#4a5568; --txt-3:#8a95a8;
+  --green:#059669; --green-bg:#ecfdf5;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#dc2626; --red-bg:#fef2f2;
+  --blue:#2563eb;
+  --acc:#2563eb; --acc-soft:#eef3fe; --acc-line:#dbe6fb; --acc-grad:linear-gradient(90deg,#2563eb,#0891b2);
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--page);color:var(--txt);line-height:1.78;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.bar{height:4px;background:var(--acc-grad)}
+.top{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--txt-2);
+  font-size:13px;font-weight:600;padding:6px 13px;border-radius:8px;border:1px solid var(--line);
+  background:#fff;transition:.18s}
+.back:hover{color:var(--acc);border-color:var(--acc-line);background:var(--acc-soft)}
+.top-t{margin-left:auto;font-size:12.5px;color:var(--txt-3);font-family:var(--mono)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 80px}
+.hero{padding:48px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.hero h1{font-size:clamp(24px,3.4vw,34px);font-weight:750;letter-spacing:-.7px;line-height:1.3;color:var(--txt)}
+.hero .sub{color:var(--txt-2);font-size:14.5px;margin-top:12px}
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+.chip{font-size:12.5px;color:var(--txt-2);background:#fff;border:1px solid var(--line);
+  padding:6px 13px;border-radius:8px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.chip b{color:var(--txt);font-weight:650}
+.toc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:34px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px -6px rgba(16,24,40,.1)}
+.toc-t{font-size:12px;font-family:var(--mono);letter-spacing:1.6px;color:var(--acc);
+  text-transform:uppercase;font-weight:700;margin-bottom:12px}
+.toc ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px}
+.toc li a{color:var(--txt-2);text-decoration:none;font-size:13.5px;display:block;padding:6px 10px;
+  border-radius:7px;border-left:2px solid transparent;transition:.16s}
+.toc li a:hover{color:var(--acc);background:var(--acc-soft);border-left-color:var(--acc)}
+article h1{font-size:26px;font-weight:750;margin:40px 0 16px;letter-spacing:-.5px;
+  padding-bottom:12px;border-bottom:2px solid var(--acc-line)}
+article h2{font-size:21px;font-weight:720;margin:38px 0 14px;letter-spacing:-.3px;
+  padding-left:14px;position:relative;scroll-margin-top:70px}
+article h2::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:4px;
+  border-radius:2px;background:var(--acc-grad)}
+article h3{font-size:16.5px;font-weight:700;margin:26px 0 10px;color:var(--txt);scroll-margin-top:70px}
+article h4{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--txt-2)}
+article p{margin:12px 0;color:var(--txt-2);font-size:14.5px}
+article strong{color:var(--txt);font-weight:680}
+article a{color:var(--blue);text-decoration:none;border-bottom:1px solid #c7d9f8}
+article a:hover{border-bottom-color:var(--blue)}
+article hr{border:none;border-top:1px dashed var(--line-strong);margin:34px 0}
+article ul,article ol{margin:12px 0 12px 6px;padding-left:22px;color:var(--txt-2);font-size:14.5px}
+article li{margin:7px 0}
+article li::marker{color:var(--acc)}
+article code{font-family:var(--mono);font-size:12.8px;background:var(--acc-soft);color:var(--acc);
+  padding:1.5px 6px;border-radius:5px;border:1px solid var(--acc-line)}
+article blockquote{background:#fff;border:1px solid var(--line);border-left:4px solid var(--acc);
+  border-radius:12px;padding:16px 22px;margin:18px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+article blockquote p{margin:5px 0;font-size:14px;color:var(--txt-2)}
+article blockquote code{background:#f1f5f9;color:var(--txt-2);border-color:var(--line)}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line);background:#fff;
+  margin:18px 0;box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px -6px rgba(16,24,40,.1)}
+table{width:100%;border-collapse:collapse;font-size:13.2px;min-width:560px}
+thead th{background:var(--card-2);color:var(--txt-2);font-weight:650;text-align:left;
+  padding:12px 15px;font-size:12.5px;letter-spacing:.3px;white-space:nowrap;
+  border-bottom:1px solid var(--line-strong)}
+tbody td{padding:11px 15px;border-bottom:1px solid #eef2f8;color:var(--txt-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f7faff}
+tbody td:first-child{color:var(--txt);font-weight:620}
+td.num{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+tr.row-bad td{background:var(--red-bg)}
+tr.row-bad:hover td{background:#fdeaea}
+tr.row-skip td{background:#f8fafc;color:var(--txt-3)}
+.code-block{background:#0f172a;border-radius:12px;overflow:hidden;margin:18px 0;
+  box-shadow:0 4px 16px -6px rgba(16,24,40,.28)}
+.code-lang{font-family:var(--mono);font-size:11px;color:#7c8ba1;background:#0b1220;
+  padding:7px 16px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #1e293b}
+.code-block pre{margin:0;padding:16px;overflow-x:auto}
+.code-block code{font-family:var(--mono);font-size:12.8px;color:#cbd5e1;background:none;
+  border:none;padding:0;line-height:1.7;white-space:pre}
+footer{border-top:1px solid var(--line);padding:26px 0;text-align:center;color:var(--txt-3);font-size:12.5px}
+footer a{color:var(--blue);text-decoration:none}
+@media(max-width:700px){.wrap,.top-in{padding-left:18px;padding-right:18px}}
+@media print{.top{display:none}.tbl-wrap{box-shadow:none}article h2{page-break-after:avoid}tr{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="bar"></div>
+<div class="top"><div class="top-in">
+  <a class="back" href="../../../压测总结.html">← 返回压测总结</a>
+  <span class="top-t">KIMI K3 压测方案</span>
+</div></div>
+<div class="wrap">
+  <div class="hero">
+    <h1>AI 运营平台 KIMI K3 API 性能压测方案</h1>
+    <p class="sub">测试目标、统一数据口径、梯度设计、闸门口径与证据采集要求</p>
+    <div class="chips"><span class="chip">文档日期 <b>2026-09-11</b></span><span class="chip">唯一模型 <b>kimi-k3(压测)</b></span><span class="chip">目标并发 <b>25 / 50 / 100 / 200 / 400</b></span></div>
+  </div>
+  <nav class="toc"><div class="toc-t">本页目录</div><ul><li><a href="#h-1">1. 测试结论先行</a></li><li><a href="#h-2">2. 已核实的环境信息</a></li><li><a href="#h-5">3. 测试目标</a></li><li><a href="#h-8">4. 统一测试数据与请求口径</a></li><li><a href="#h-12">5. 为什么主测试采用API Key直调</a></li><li><a href="#h-13">6. 整体执行顺序</a></li><li><a href="#h-14">7. T0：压测前预检</a></li><li><a href="#h-17">8. T1：非流式五级梯度容量测试</a></li><li><a href="#h-21">9. T2：流式连接专项测试</a></li><li><a href="#h-22">10. T3：恢复性验证</a></li><li><a href="#h-23">11. JMeter测试计划组件树</a></li><li><a href="#h-24">12. JMeter逐项配置</a></li><li><a href="#h-33">13. 正式执行命令</a></li><li><a href="#h-34">14. JTL保存原则</a></li><li><a href="#h-35">15. 每级升压条件</a></li><li><a href="#h-36">16. 停止条件</a></li><li><a href="#h-37">17. 必须采集的JMeter指标</a></li><li><a href="#h-38">18. 平台侧监控</a></li><li><a href="#h-39">19. KIMI K3供应商侧监控</a></li><li><a href="#h-40">20. 平台与供应商瓶颈归因</a></li><li><a href="#h-41">21. 供应商直连对照测试</a></li><li><a href="#h-42">22. 结果目录</a></li><li><a href="#h-43">23. 最终结果汇总表</a></li><li><a href="#h-47">24. 最终报告必须给出的结论</a></li><li><a href="#h-48">25. 执行检查清单</a></li><li><a href="#h-52">26. 当前状态说明</a></li></ul></nav>
+  <article><h1 id="h-0">AI 运营平台 KIMI K3 API 性能压测方案</h1>
+<blockquote><p>文档日期：2026-09-11  </p><p>当前状态：单轮正式方案已定稿，尚未启动模型调用和性能压测  </p><p>测试环境：<code>198.51.100.10</code>  </p><p>压测工具：Apache JMeter 5.6.3，Java 17  </p><p>唯一测试模型：<strong>KIMI K3(压测)</strong>  </p><p>API 请求中必须使用的精确模型值：<code>kimi-k3(压测)</code></p></blockquote>
+<h2 id="h-1">1. 测试结论先行</h2>
+<p>本次不通过浏览器反复操作“模型体验”页面发压，而是使用 JMeter 直接调用平台对外提供的 OpenAI 兼容接口：</p>
+<div class="code-block"><div class="code-lang">http</div><pre><code>POST http://198.51.100.10/v1/chat/completions</code></pre></div>
+<p>该方式会真实经过以下完整链路：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>JMeter
+  -&gt; AI 运营平台API网关
+  -&gt; API Key鉴权
+  -&gt; 模型权限、额度和限流校验
+  -&gt; 固定模型路由
+  -&gt; KIMI K3(压测)对应供应商
+  -&gt; 大模型推理
+  -&gt; 平台响应处理
+  -&gt; 用量、计费和调用日志记录
+  -&gt; JMeter</code></pre></div>
+<p>因此它最适合同时评估：</p>
+<ol><li>AI 运营平台的API网关、鉴权、路由、连接池、日志和计费链路负载。</li><li><code>KIMI K3(压测)</code>背后供应商的并发承载、排队、限流和推理性能。</li><li>整条端到端链路在最高400并发线程下的可用性、吞吐量和响应时间。</li></ol>
+<p>本方案禁止使用以下模型：</p>
+<ul><li><code>自动路由</code></li><li><code>deepseek-v4-pro-qinwenxiu</code></li><li>任何其他模型</li></ul>
+<p>原因：自动路由可能把请求分配至不同供应商，无法准确评估KIMI K3供应商负载；其他模型不在本次任务范围内。</p>
+<h2 id="h-2">2. 已核实的环境信息</h2>
+<h3 id="h-3">2.1 平台信息</h3>
+<div class="tbl-wrap"><table><thead><tr><th>项目</th><th>已核实内容</th></tr></thead><tbody><tr><td>平台页面</td><td><code>https://198.51.100.10</code></td></tr><tr><td>API Base URL</td><td><code>http://198.51.100.10/v1</code></td></tr><tr><td>模型列表接口</td><td><code>GET /v1/models</code></td></tr><tr><td>文本生成接口</td><td><code>POST /v1/chat/completions</code></td></tr><tr><td>鉴权方式</td><td><code>Authorization: Bearer &lt;API_KEY&gt;</code></td></tr><tr><td>API协议</td><td>OpenAI兼容API</td></tr><tr><td>目标模型展示名</td><td><code>KIMI K3(压测)</code></td></tr><tr><td>API实际模型值</td><td><code>kimi-k3(压测)</code></td></tr></tbody></table></div>
+<p>已使用API Key对<code>GET http://198.51.100.10/v1/models</code>做过一次只读验证，接口返回的目标模型精确值为：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>kimi-k3(压测)</code></pre></div>
+<p>JMeter Body 中必须原样使用这个值，不应自行改成全大写，也不应增加空格。</p>
+<h3 id="h-4">2.2 压测机信息</h3>
+<div class="tbl-wrap"><table><thead><tr><th>项目</th><th>当前信息</th></tr></thead><tbody><tr><td>JMeter</td><td>Apache JMeter 5.6.3</td></tr><tr><td>Java</td><td>Liberica JDK 17.0.19 LTS</td></tr><tr><td>CPU</td><td>Intel i5-13500H，12核/16逻辑处理器</td></tr><tr><td>内存</td><td>约15.73 GB</td></tr><tr><td>JMeter默认堆</td><td><code>-Xms1g -Xmx1g</code></td></tr></tbody></table></div>
+<p>工具版本能够支持本次最高400线程测试，但正式执行必须采用非GUI模式。建议执行前关闭浏览器多余标签、IDE、办公软件等高内存程序，使可用内存达到5 GB以上，并将JMeter堆调整为：</p>
+<div class="code-block"><div class="code-lang">powershell</div><pre><code>$env:HEAP = "-Xms1g -Xmx2g -XX:MaxMetaspaceSize=256m"</code></pre></div>
+<h2 id="h-5">3. 测试目标</h2>
+<h3 id="h-6">3.1 核心目标</h3>
+<ol><li>获取1线程条件下的接口功能和性能基线。</li><li>验证25、50、100、200、400并发线程下端到端调用是否稳定。</li><li>确认各并发阶段的成功率、错误率、吞吐量、P90、P95、P99和最大响应时间。</li><li>找出响应时间明显增长、错误率开始上升或吞吐量不再增长的性能拐点。</li><li>确认首次出现429、平台5xx、供应商5xx、连接重置和读取超时的并发级别。</li><li>判断400并发下平台是否仍能完成API Key鉴权、固定模型路由、供应商调用、计费和日志落库。</li><li>结合服务端监控区分平台瓶颈与KIMI K3供应商瓶颈。</li><li>验证高压结束后，接口是否在合理时间内恢复到基线水平。</li></ol>
+<h3 id="h-7">3.2 本次不测试</h3>
+<ul><li>登录接口和验证码性能。</li><li>浏览器页面渲染性能。</li><li>模型体验页面的前端交互性能。</li><li>自动路由性能。</li><li>其他模型或多模型混合流量。</li><li>多轮上下文对话。</li><li>图片、语音、视频和Embedding接口。</li><li>供应商直连性能，除非后续由开发或运维提供供应商直连接口和测试Key。</li></ul>
+<h2 id="h-8">4. 统一测试数据与请求口径</h2>
+<h3 id="h-9">4.1 固定问题</h3>
+<p>所有正式请求统一使用：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>给出一套成都旅游一日游方案，50字左右</code></pre></div>
+<p>不得随机替换问题，不得携带上一轮问答，也不得在同一个上下文中累计消息。</p>
+<h3 id="h-10">4.2 推荐正式请求</h3>
+<div class="code-block"><div class="code-lang">http</div><pre><code>POST http://198.51.100.10/v1/chat/completions
+Authorization: Bearer sk-REPLACE_WITH_YOUR_KEY
+Content-Type: application/json
+Accept: application/json</code></pre></div>
+<p>非流式请求Body：</p>
+<div class="code-block"><div class="code-lang">json</div><pre><code>{
+  "model": "kimi-k3(压测)",
+  "messages": [
+    {
+      "role": "user",
+      "content": "给出一套成都旅游一日游方案，50字左右"
+    }
+  ],
+  "temperature": 0.2,
+  "max_tokens": 100,
+  "stream": false
+}</code></pre></div>
+<p>参数固定原则：</p>
+<div class="tbl-wrap"><table><thead><tr><th>参数</th><th>固定值</th><th>目的</th></tr></thead><tbody><tr><td><code>model</code></td><td><code>kimi-k3(压测)</code></td><td>保证所有请求落到指定模型和供应商</td></tr><tr><td><code>temperature</code></td><td><code>0.2</code></td><td>降低随机性，使各阶段输出相对可比</td></tr><tr><td><code>max_tokens</code></td><td><code>100</code></td><td>控制最大输出规模，减少输出长度波动</td></tr><tr><td><code>stream</code></td><td>首轮<code>false</code></td><td>便于JMeter准确完成JSON断言和总耗时统计</td></tr></tbody></table></div>
+<p>注意：自然语言中的“50字左右”不能严格控制输出Token数，所以必须同时固定<code>max_tokens</code>。正式压测前应以单请求确认100 Token不会把正常答案截断。如果目标模型不接受<code>temperature</code>或<code>max_tokens</code>，应以单请求返回为依据修改，但五个梯度阶段必须保持完全相同的Body。</p>
+<h3 id="h-11">4.3 会话隔离</h3>
+<p>对外OpenAI兼容接口的主请求不需要登录Token，也不使用平台页面的登录会话。每次请求只包含一个<code>user</code>消息，因此天然是独立单轮请求。</p>
+<p>不得在每个JMeter线程内执行登录和验证码请求。否则测到的将是登录系统加模型API的混合性能，并会造成验证码大量刷新，污染结论。</p>
+<h2 id="h-12">5. 为什么主测试采用API Key直调</h2>
+<p>平台模型体验页面内部使用登录会话，并调用：</p>
+<div class="code-block"><div class="code-lang">http</div><pre><code>POST /api/v1/chat/completions
+Accept: text/event-stream</code></pre></div>
+<p>模型体验页面适合验证页面功能，但不是本次负载测试主入口，原因如下：</p>
+<ol><li>页面调用会混入登录Token、页面逻辑、前端渲染和浏览器资源消耗。</li><li>400个浏览器会话会先压垮压测机，不能代表API服务真实容量。</li><li>用户实际要验证的是平台API Key调用链路。</li><li><code>POST /v1/chat/completions</code>能稳定固定<code>model=kimi-k3(压测)</code>。</li><li>JMeter可以直接对API采集状态码、吞吐量、分位响应时间和错误类型。</li></ol>
+<h2 id="h-13">6. 整体执行顺序</h2>
+<p>正式测试只执行<strong>一轮完整流程</strong>，不再安排第二轮扩大循环复测。该轮分为四部分，必须按顺序执行：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>T0：环境和单请求预检
+  -&gt; T1：非流式五级折中梯度容量测试
+  -&gt; T2：流式三档代表性连接专项测试
+  -&gt; T3：恢复性验证</code></pre></div>
+<p>本轮正式压力请求总数为：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>非流式29,500次 + 流式6,250次 = 35,750次</code></pre></div>
+<p>另有T0预检3次和T3恢复检查10次，因此整个执行流程预计产生35,763次模型调用。每个阶段必须使用独立Label、JTL和HTML报告，最终再汇总为同一份桌面Markdown测试报告。</p>
+<p>任何阶段达到停止条件，都必须停止继续升压，先保存结果并排查。</p>
+<h2 id="h-14">7. T0：压测前预检</h2>
+<p>T0不是性能结论，只用于证明脚本和业务链路配置正确。</p>
+<h3 id="h-15">7.1 API Key和模型检查</h3>
+<p>请求：</p>
+<div class="code-block"><div class="code-lang">http</div><pre><code>GET http://198.51.100.10/v1/models</code></pre></div>
+<p>通过条件：</p>
+<ul><li>HTTP状态码为200。</li><li>响应模型列表包含精确值<code>kimi-k3(压测)</code>。</li><li>不出现401、403、429或额度不足错误。</li></ul>
+<h3 id="h-16">7.2 单请求功能检查</h3>
+<p>配置：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>线程数：1
+Ramp-up：1秒
+循环次数：3
+stream：false</code></pre></div>
+<p>必须人工检查至少一次完整响应，确认：</p>
+<ul><li>HTTP 200。</li><li>响应是JSON。</li><li><code>choices[0].message.content</code>非空。</li><li>回答内容与成都一日游有关。</li><li>回答没有明显截断。</li><li>如果响应包含<code>usage</code>，则<code>total_tokens &gt; 0</code>。</li><li>平台消费记录或调用日志能够查询到对应请求。</li></ul>
+<p>只有T0连续3次全部成功，才允许进入25线程阶段。</p>
+<h2 id="h-17">8. T1：非流式五级梯度容量测试</h2>
+<h3 id="h-18">8.1 推荐梯度</h3>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th>并发线程</th><th>每线程循环</th><th>预计请求总数</th><th>Ramp-up</th><th>阶段间休息</th></tr></thead><tbody><tr><td>P1</td><td class="num">25</td><td class="num">20</td><td class="num">500</td><td>30秒</td><td>3分钟</td></tr><tr><td>P2</td><td class="num">50</td><td class="num">20</td><td class="num">1,000</td><td>60秒</td><td>3分钟</td></tr><tr><td>P3</td><td class="num">100</td><td class="num">20</td><td class="num">2,000</td><td>120秒</td><td>3至5分钟</td></tr><tr><td>P4</td><td class="num">200</td><td class="num">30</td><td class="num">6,000</td><td>180秒</td><td>5分钟</td></tr><tr><td>P5</td><td class="num">400</td><td class="num">50</td><td class="num">20,000</td><td>300秒</td><td>5分钟后进入流式专项</td></tr></tbody></table></div>
+<p>正式五档共计：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>500 + 1,000 + 2,000 + 6,000 + 20,000 = 29,500次模型请求</code></pre></div>
+<p>首轮不使用每线程500次。若按五档均循环500次，总调用量会达到几十万次，测试时长、供应商消耗和日志量过大，也不利于快速发现拐点。</p>
+<h3 id="h-19">8.2 为什么采用20、20、20、30、50次折中循环</h3>
+<ul><li>25至100线程使用20次循环，兼顾样本量和低压阶段执行时间。</li><li>200线程提高到30次循环，获得6,000个中高压样本。</li><li>400线程提高到50次循环，获得20,000个最高压样本，用一轮同时观察容量和持续稳定性。</li><li>正式JTL不保存完整回答，所以样本量增加后主要增加测试时长和服务端负载，不应显著扩大JMeter内存占用。</li><li>本轮结束后不再安排相同梯度的第二轮50循环复测。</li></ul>
+<p>循环次数主要影响持续时间和样本数；线程数才直接决定瞬时并发压力。因此不能把“本机能开400线程”理解为“每个线程必须循环500次”。</p>
+<p>正式执行前已重新核实本机资源；使用非GUI模式与<code>-Xmx2g</code>，并由脚本持续采集CPU和可用内存，达到停止闸门时不再继续升压。</p>
+<h3 id="h-20">8.3 400线程不等于400 RPS</h3>
+<p>JMeter标准线程组属于闭环模型：一个线程必须等上一次模型回答完成后才发送下一次请求。</p>
+<p>估算关系：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>吞吐量（请求/秒）约等于 并发线程数 / 平均完整响应时间（秒）</code></pre></div>
+<p>例如400线程、平均响应时间20秒：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>400 / 20 = 约20 RPS</code></pre></div>
+<p>所以本测试声明的是“最高400并发线程”，不能在报告中写成“400 RPS”，除非JMeter实际吞吐量确实达到400次/秒。</p>
+<h2 id="h-21">9. T2：流式连接专项测试</h2>
+<p>非流式五档结束并确定系统稳定区间后，再执行流式专项。流式请求Body仅修改：</p>
+<div class="code-block"><div class="code-lang">json</div><pre><code>"stream": true</code></pre></div>
+<p>Header改为：</p>
+<div class="code-block"><div class="code-lang">http</div><pre><code>Accept: text/event-stream</code></pre></div>
+<p>流式专项仍属于同一轮完整执行，但只选择25、200、400三个有代表性的并发档，每线程10次：</p>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th>并发线程</th><th>每线程循环</th><th>请求总数</th><th>Ramp-up</th></tr></thead><tbody><tr><td>S1</td><td class="num">25</td><td class="num">10</td><td class="num">250</td><td>30秒</td></tr><tr><td>S2</td><td class="num">200</td><td class="num">10</td><td class="num">2,000</td><td>180秒</td></tr><tr><td>S3</td><td class="num">400</td><td class="num">10</td><td class="num">4,000</td><td>300秒</td></tr></tbody></table></div>
+<p>流式专项共计：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>250 + 2,000 + 4,000 = 6,250次模型请求</code></pre></div>
+<p>流式阶段没有采用50循环，是因为其目标是验证SSE长连接、首Token、持续输出和断流情况；最高档4,000个流式样本已足以做首轮判断，同时避免整个单轮方案膨胀到接近60,000次调用。</p>
+<p>流式专项关注：</p>
+<ul><li>HTTP响应是否为<code>text/event-stream</code>。</li><li>SSE数据是否持续返回。</li><li>是否以<code>data: [DONE]</code>正常结束。</li><li>流中是否出现业务<code>error</code>。</li><li>中途断流率。</li><li>连接重置、读取超时和网关主动断开数量。</li><li>平台活动连接数与上游连接池占用。</li><li>供应商首Token时间和完整生成时间。</li></ul>
+<p>重要限制：JMeter普通HTTP Request记录的<code>Elapsed</code>是完整SSE流结束时间，<code>Latency</code>也不能直接等同于大模型首Token时间TTFT。若验收要求TTFT，优先从平台服务端日志采集<code>upstream_first_token - upstream_start</code>，或者增加专门的SSE分块计时脚本。</p>
+<h2 id="h-22">10. T3：恢复性验证</h2>
+<p>400线程阶段结束后等待2分钟，再执行：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>线程数：1
+循环次数：10
+Ramp-up：1秒
+stream：false</code></pre></div>
+<p>恢复通过条件：</p>
+<ul><li>10次请求全部成功。</li><li>不再持续出现429、5xx、超时或连接重置。</li><li>恢复阶段P95不高于T0基线P95的1.5倍，或满足项目既定SLA。</li><li>平台CPU、内存、线程池、连接池和队列回落。</li><li>供应商上游排队和错误率回落。</li></ul>
+<p>如果高压停止后仍持续异常，应记录“高压后未及时恢复”，这本身就是重要性能缺陷。</p>
+<h2 id="h-23">11. JMeter测试计划组件树</h2>
+<p>建议建立一个参数化JMX，所有梯度复用同一份文件：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>测试计划：KIMI-K3-API性能压测
+├─ 用户定义的变量
+├─ HTTP请求默认值
+├─ HTTP信息头管理器
+├─ 线程组：KIMI-K3固定模型
+│  ├─ HTTP请求：POST-chat-completions
+│  ├─ 响应断言：HTTP-200
+│  ├─ JSON JMESPath断言：回答非空
+│  ├─ JSR223断言：业务结构和内容合理
+│  └─ 常数定时器（首轮关闭，可选）
+└─ 简单数据写入器</code></pre></div>
+<p>正式压测时不要启用：</p>
+<ul><li>查看结果树（View Results Tree）</li><li>聚合报告GUI监听器</li><li>图形结果（Graph Results）</li><li>响应数据完整写入JTL</li><li>请求Header完整写入JTL</li><li>响应Header完整写入JTL</li></ul>
+<p>这些组件会消耗大量内存，可能导致压测机成为瓶颈。</p>
+<h2 id="h-24">12. JMeter逐项配置</h2>
+<h3 id="h-25">12.1 用户定义的变量</h3>
+<div class="tbl-wrap"><table><thead><tr><th>名称</th><th>值</th></tr></thead><tbody><tr><td><code>PROTOCOL</code></td><td><code>http</code></td></tr><tr><td><code>HOST</code></td><td><code>198.51.100.10</code></td></tr><tr><td><code>PORT</code></td><td>留空或<code>80</code></td></tr><tr><td><code>API_KEY</code></td><td><code>${__P(apiKey,)}</code></td></tr><tr><td><code>MODEL</code></td><td><code>${__P(model,kimi-k3(压测))}</code></td></tr><tr><td><code>STREAM</code></td><td><code>${__P(stream,false)}</code></td></tr><tr><td><code>MAX_TOKENS</code></td><td><code>${__P(maxTokens,100)}</code></td></tr></tbody></table></div>
+<h3 id="h-26">12.2 HTTP请求默认值</h3>
+<div class="tbl-wrap"><table><thead><tr><th>字段</th><th>配置</th></tr></thead><tbody><tr><td>协议</td><td><code>${PROTOCOL}</code></td></tr><tr><td>服务器名称或IP</td><td><code>${HOST}</code></td></tr><tr><td>端口号</td><td><code>${PORT}</code></td></tr><tr><td>连接超时</td><td><code>10000</code>毫秒</td></tr><tr><td>响应超时</td><td><code>120000</code>毫秒</td></tr><tr><td>Implementation</td><td><code>HttpClient4</code></td></tr><tr><td>Retrieve All Embedded Resources</td><td>不勾选</td></tr></tbody></table></div>
+<p>若T0证明正常响应可能超过120秒，可统一调整为180000毫秒，但五档之间不得随意变更超时。</p>
+<h3 id="h-27">12.3 HTTP信息头管理器</h3>
+<p>非流式：</p>
+<div class="tbl-wrap"><table><thead><tr><th>名称</th><th>值</th></tr></thead><tbody><tr><td><code>Authorization</code></td><td><code>Bearer ${API_KEY}</code></td></tr><tr><td><code>Content-Type</code></td><td><code>application/json</code></td></tr><tr><td><code>Accept</code></td><td><code>application/json</code></td></tr></tbody></table></div>
+<p>流式专项将<code>Accept</code>改为：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>text/event-stream</code></pre></div>
+<h3 id="h-28">12.4 线程组</h3>
+<div class="tbl-wrap"><table><thead><tr><th>字段</th><th>值</th></tr></thead><tbody><tr><td>线程数</td><td><code>${__P(threads,25)}</code></td></tr><tr><td>Ramp-up时间</td><td><code>${__P(rampSeconds,30)}</code></td></tr><tr><td>循环次数</td><td><code>${__P(loops,10)}</code></td></tr><tr><td>延迟创建线程</td><td>勾选</td></tr><tr><td>调度器</td><td>不勾选，首轮按循环次数执行</td></tr><tr><td>采样器错误后的动作</td><td><code>Continue</code>，由停止条件人工控制</td></tr></tbody></table></div>
+<h3 id="h-29">12.5 HTTP Request</h3>
+<div class="tbl-wrap"><table><thead><tr><th>字段</th><th>值</th></tr></thead><tbody><tr><td>名称</td><td><code>POST-chat-completions-kimi-k3</code></td></tr><tr><td>方法</td><td><code>POST</code></td></tr><tr><td>路径</td><td><code>/v1/chat/completions</code></td></tr><tr><td>Content encoding</td><td><code>UTF-8</code></td></tr><tr><td>Body Data</td><td>使用下方JSON</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-lang">json</div><pre><code>{
+  "model": "${MODEL}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "给出一套成都旅游一日游方案，50字左右"
+    }
+  ],
+  "temperature": 0.2,
+  "max_tokens": ${MAX_TOKENS},
+  "stream": ${STREAM}
+}</code></pre></div>
+<h3 id="h-30">12.6 HTTP状态码断言</h3>
+<p>添加Response Assertion：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>Field to Test：Response Code
+Pattern Matching Rules：Equals
+Patterns to Test：200</code></pre></div>
+<h3 id="h-31">12.7 非流式JSON断言</h3>
+<p>至少验证：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>$.choices[0].message.content 存在且非空</code></pre></div>
+<p>如响应包含标准字段，再验证：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>$.choices[0].finish_reason 存在
+$.usage.total_tokens &gt; 0</code></pre></div>
+<p>内容不要断言必须逐字包含某段固定答案。模型回答具有随机性，过严文本匹配会制造假失败。建议只验证：</p>
+<ul><li>回答非空。</li><li>回答字符数在20至300之间。</li><li>响应不存在顶层<code>error</code>。</li><li>业务结果可解析。</li></ul>
+<h3 id="h-32">12.8 失败分类</h3>
+<p>建议通过JSR223 Assertion或后处理器给失败样本分类：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>AUTH_401：API Key无效或失效
+FORBIDDEN_403：模型权限或租户权限不足
+RATE_LIMIT_429：平台或供应商限流
+PLATFORM_5XX：平台内部错误
+UPSTREAM_5XX：供应商或上游模型错误
+CONNECT_TIMEOUT：连接建立超时
+READ_TIMEOUT：等待模型响应超时
+CONNECTION_RESET：连接被重置
+INVALID_JSON：非流式响应格式错误
+EMPTY_CONTENT：HTTP成功但回答为空
+SSE_INCOMPLETE：流式响应未正常结束</code></pre></div>
+<h2 id="h-33">13. 正式执行命令</h2>
+<p>假设JMX位于：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\JMeter脚本\KIMI-K3-API性能压测.jmx</code></pre></div>
+<p>先建立输出目录，但每次HTML报告目录必须不存在或为空。正式运行时关闭JMeter GUI，在PowerShell执行。</p>
+<p>通用格式：</p>
+<div class="code-block"><div class="code-lang">powershell</div><pre><code>$env:HEAP = "-Xms1g -Xmx2g -XX:MaxMetaspaceSize=256m"
+
+&amp; "C:\Users\ZhuanZ1\apache-jmeter-5.6.3\bin\jmeter.bat" `
+  -n `
+  -t "C:\Users\ZhuanZ1\Desktop\压测报告\JMeter脚本\KIMI-K3-API性能压测.jmx" `
+  -l "C:\Users\ZhuanZ1\Desktop\压测报告\results\P1-25x20.jtl" `
+  -e `
+  -o "C:\Users\ZhuanZ1\Desktop\压测报告\reports\P1-25x20" `
+  -Jthreads=25 `
+  -Jloops=20 `
+  -JrampSeconds=30 `
+  -Jmodel="kimi-k3(压测)" `
+  -Jstream=false `
+  -JmaxTokens=100 `
+  -JapiKey="sk-REPLACE_WITH_YOUR_KEY"</code></pre></div>
+<p>五档参数对应关系：</p>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th><code>-Jthreads</code></th><th><code>-Jloops</code></th><th><code>-JrampSeconds</code></th><th>JTL名称</th><th>HTML目录名</th></tr></thead><tbody><tr><td>P1</td><td class="num">25</td><td class="num">20</td><td class="num">30</td><td><code>P1-25x20.jtl</code></td><td><code>P1-25x20</code></td></tr><tr><td>P2</td><td class="num">50</td><td class="num">20</td><td class="num">60</td><td><code>P2-50x20.jtl</code></td><td><code>P2-50x20</code></td></tr><tr><td>P3</td><td class="num">100</td><td class="num">20</td><td class="num">120</td><td><code>P3-100x20.jtl</code></td><td><code>P3-100x20</code></td></tr><tr><td>P4</td><td class="num">200</td><td class="num">30</td><td class="num">180</td><td><code>P4-200x30.jtl</code></td><td><code>P4-200x30</code></td></tr><tr><td>P5</td><td class="num">400</td><td class="num">50</td><td class="num">300</td><td><code>P5-400x50.jtl</code></td><td><code>P5-400x50</code></td></tr></tbody></table></div>
+<p>同一轮内的流式三档参数：</p>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th><code>-Jthreads</code></th><th><code>-Jloops</code></th><th><code>-JrampSeconds</code></th><th><code>-Jstream</code></th><th>JTL名称</th><th>HTML目录名</th></tr></thead><tbody><tr><td>S1</td><td class="num">25</td><td class="num">10</td><td class="num">30</td><td><code>true</code></td><td><code>S1-stream-25x10.jtl</code></td><td><code>S1-stream-25x10</code></td></tr><tr><td>S2</td><td class="num">200</td><td class="num">10</td><td class="num">180</td><td><code>true</code></td><td><code>S2-stream-200x10.jtl</code></td><td><code>S2-stream-200x10</code></td></tr><tr><td>S3</td><td class="num">400</td><td class="num">10</td><td class="num">300</td><td><code>true</code></td><td><code>S3-stream-400x10.jtl</code></td><td><code>S3-stream-400x10</code></td></tr></tbody></table></div>
+<p>每次只替换表中的线程数、循环数、Ramp-up、JTL名称和HTML目录名，不得修改模型、问题、输出限制、超时或断言。</p>
+<h2 id="h-34">14. JTL保存原则</h2>
+<p>正式JTL只保留分析性能所需字段：</p>
+<ul><li>时间戳</li><li>Elapsed</li><li>Label</li><li>Response Code</li><li>Success</li><li>Failure Message</li><li>Bytes / Sent Bytes</li><li>Latency</li><li>Connect Time</li><li>Thread Name</li></ul>
+<p>不保存：</p>
+<ul><li>完整请求Body</li><li>完整模型回答</li><li>API Key</li><li>请求Header</li><li>响应Header</li><li>成功样本Response Data</li></ul>
+<p>否则最高档20,000次非流式模型回答和4,000次流式回答可能使JTL迅速膨胀，并导致JMeter内存或磁盘先成为瓶颈。</p>
+<h2 id="h-35">15. 每级升压条件</h2>
+<p>只有当前阶段同时满足下列条件，才进入下一档：</p>
+<div class="tbl-wrap"><table><thead><tr><th>指标</th><th>建议条件</th></tr></thead><tbody><tr><td>业务成功率</td><td><code>&gt;= 99%</code></td></tr><tr><td>HTTP 5xx</td><td><code>&lt; 1%</code></td></tr><tr><td>HTTP 429</td><td><code>&lt; 1%</code>，若平台另有明确限流SLA则按SLA</td></tr><tr><td>连接超时/重置</td><td>无持续增长</td></tr><tr><td>JMeter CPU</td><td>建议峰值<code>&lt; 80%</code></td></tr><tr><td>压测机内存</td><td>不持续下降到危险水平，不发生频繁Full GC</td></tr><tr><td>平台CPU/内存</td><td>无持续饱和或失控增长</td></tr><tr><td>平台连接池/线程池</td><td>无持续耗尽</td></tr><tr><td>供应商调用</td><td>无明显连续限流、排队或失败</td></tr></tbody></table></div>
+<p>以上门槛是尚无正式SLA时的首轮建议，不应冒充产品最终验收标准。正式SLA应由产品、开发和运维共同确认。</p>
+<h2 id="h-36">16. 停止条件</h2>
+<p>任一条件满足时立即停止继续升压：</p>
+<ol><li>当前阶段5xx错误率达到或超过2%。</li><li>429达到或超过5%，并且已确认不是预期限流策略。</li><li>连续出现连接重置、连接超时或读取超时。</li><li>P95达到基线P95的3倍以上并持续恶化。</li><li>吞吐量不再增长，但并发、排队和响应时间继续增长。</li><li>平台CPU、内存、线程池或连接池持续超过85%。</li><li>数据库连接池耗尽，计费、消费记录或日志队列持续积压。</li><li>供应商持续返回429、5xx或大量主动断流。</li><li>JMeter压测机CPU持续超过85%。</li><li>JMeter出现<code>OutOfMemoryError</code>、频繁Full GC或可用内存过低。</li><li>发现影响环境稳定或其他测试人员工作的异常。</li></ol>
+<p>停止后应保存当前JTL、HTML报告、平台监控截图和服务日志时间区间，不应直接重跑覆盖现场。</p>
+<h2 id="h-37">17. 必须采集的JMeter指标</h2>
+<p>每个梯度单独记录：</p>
+<ul><li>Samples</li><li>成功数和失败数</li><li>成功率和错误率</li><li>Throughput，单位requests/s</li><li>Average</li><li>Median / P50</li><li>P90</li><li>P95</li><li>P99</li><li>Min / Max</li><li>Connect Time</li><li>Latency</li><li>Received KB/sec</li><li>Sent KB/sec</li><li>401、403、429、5xx数量</li><li>连接超时数量</li><li>读取超时数量</li><li>Connection Reset数量</li><li>空回答数量</li><li>非法JSON数量</li><li>Token使用量，如响应返回<code>usage</code></li></ul>
+<p>注意：JMeter的<code>Latency</code>不得直接命名为“首Token时间”。</p>
+<h2 id="h-38">18. 平台侧监控</h2>
+<p>为了判断平台是否是瓶颈，测试期间至少每10至15秒采集：</p>
+<ul><li>API网关CPU、内存、负载。</li><li>活动线程数、线程池排队和拒绝数。</li><li>当前连接数、连接建立速率和连接关闭状态。</li><li>上游HTTP连接池总数、活动数、空闲数、等待数。</li><li>API Key鉴权耗时。</li><li>租户、模型权限和额度校验耗时。</li><li>模型路由耗时。</li><li>平台请求排队时间。</li><li>平台到供应商的请求耗时。</li><li>数据库CPU、连接池和慢SQL。</li><li>消费记录、计费记录和调用日志写入耗时。</li><li>日志或消息队列积压。</li><li>平台401、403、429、5xx及其错误码分类。</li><li>JVM堆、非堆、GC暂停和Full GC，如平台为Java服务。</li></ul>
+<h2 id="h-39">19. KIMI K3供应商侧监控</h2>
+<p>如果平台或供应商能够提供指标，至少采集：</p>
+<ul><li>上游请求数与并发请求数。</li><li>供应商请求排队时间。</li><li>供应商首Token时间TTFT。</li><li>完整生成时间。</li><li>输入Token、输出Token和总Token。</li><li>输出Token速度，tokens/s。</li><li>供应商429数量和限流原因。</li><li>供应商5xx数量和具体错误类型。</li><li>上游连接超时和读取超时。</li><li>上游主动断流和连接重置。</li><li>供应商并发、RPM和TPM限制。</li><li>若为自建推理服务：GPU利用率、显存、KV Cache、批处理大小和推理队列。</li></ul>
+<h2 id="h-40">20. 平台与供应商瓶颈归因</h2>
+<p>建议平台日志为每个请求记录以下时间点：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>request_start
+auth_end
+route_end
+upstream_start
+upstream_first_token
+upstream_end
+record_end
+request_end</code></pre></div>
+<p>可以计算：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>鉴权耗时 = auth_end - request_start
+路由及平台前置耗时 = upstream_start - auth_end
+供应商首Token时间 = upstream_first_token - upstream_start
+供应商完整生成时间 = upstream_end - upstream_start
+平台计费/日志后置耗时 = request_end - upstream_end
+端到端耗时 = request_end - request_start</code></pre></div>
+<p>典型判断：</p>
+<div class="tbl-wrap"><table><thead><tr><th>现象</th><th>优先怀疑方向</th></tr></thead><tbody><tr><td>平台CPU/线程池/连接池饱和，上游耗时稳定</td><td>平台瓶颈</td></tr><tr><td>平台前置耗时增长，上游尚未开始</td><td>平台鉴权、路由或排队瓶颈</td></tr><tr><td><code>upstream_start</code>之后耗时暴涨，供应商429/5xx增加</td><td>KIMI K3供应商瓶颈或限流</td></tr><tr><td>平台和供应商都正常，但JMeter CPU/GC异常</td><td>压测机瓶颈，结果无效</td></tr><tr><td>吞吐不增、响应时间增、供应商排队增</td><td>供应商达到容量拐点</td></tr><tr><td>模型返回已完成，但日志/计费写入积压</td><td>平台后置链路瓶颈</td></tr></tbody></table></div>
+<p>仅凭JMeter端到端响应时间不能直接认定“供应商性能不足”，必须结合上游调用指标或供应商直连对照。</p>
+<h2 id="h-41">21. 供应商直连对照测试</h2>
+<p>如果后续需要把平台开销和供应商开销严格拆开，需要开发或运维另行提供：</p>
+<ul><li>KIMI K3供应商真实API地址。</li><li>供应商专用测试Key。</li><li>供应商模型精确名称。</li><li>供应商并发、RPM、TPM限制。</li><li>是否允许400并发直压。</li></ul>
+<p>然后使用相同问题、相同参数和相同梯度分别执行：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>A：JMeter -&gt; AI 运营平台 -&gt; KIMI K3供应商
+B：JMeter -&gt; KIMI K3供应商</code></pre></div>
+<p>近似计算：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>平台附加开销 = A端到端耗时 - B供应商直连耗时</code></pre></div>
+<p>当前API Key属于平台，因此当前方案测得的是“平台加KIMI K3供应商”的完整端到端性能，不是绕过平台后的纯供应商性能。</p>
+<h2 id="h-42">22. 结果目录</h2>
+<p>建议每档独立保存：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\
+├─ results\
+│  ├─ T0-baseline.jtl
+│  ├─ P1-25x20.jtl
+│  ├─ P2-50x20.jtl
+│  ├─ P3-100x20.jtl
+│  ├─ P4-200x30.jtl
+│  ├─ P5-400x50.jtl
+│  ├─ S1-stream-25x10.jtl
+│  ├─ S2-stream-200x10.jtl
+│  ├─ S3-stream-400x10.jtl
+│  └─ T3-recovery.jtl
+├─ reports\
+│  ├─ T0-baseline\
+│  ├─ P1-25x20\
+│  ├─ P2-50x20\
+│  ├─ P3-100x20\
+│  ├─ P4-200x30\
+│  ├─ P5-400x50\
+│  ├─ S1-stream-25x10\
+│  ├─ S2-stream-200x10\
+│  ├─ S3-stream-400x10\
+│  └─ T3-recovery\
+├─ server-monitoring\
+├─ test-notes\
+└─ KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
+<p>最终Markdown测试报告固定输出到：</p>
+<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
+<p>各阶段JMeter HTML报告也全部位于桌面<code>KIMI压测结果\reports</code>目录下。即使某阶段触发停止条件，仍须基于已经完成的阶段生成一份“部分执行报告”，不得丢失已获得的数据。</p>
+<h2 id="h-43">23. 最终结果汇总表</h2>
+<h3 id="h-44">23.1 非流式容量结果</h3>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th>并发</th><th>样本数</th><th>成功率</th><th>RPS</th><th>Avg(ms)</th><th>P90(ms)</th><th>P95(ms)</th><th>P99(ms)</th><th>Max(ms)</th><th>429</th><th>5xx</th><th>超时</th><th>重置</th></tr></thead><tbody><tr><td>T0</td><td class="num">1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>P1</td><td class="num">25</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>P2</td><td class="num">50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>P3</td><td class="num">100</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>P4</td><td class="num">200</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>P5</td><td class="num">400</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div>
+<h3 id="h-45">23.2 流式连接结果</h3>
+<div class="tbl-wrap"><table><thead><tr><th>阶段</th><th>并发</th><th>样本数</th><th>成功率</th><th>完整流P95</th><th>TTFT P95（服务端）</th><th>未收到DONE</th><th>中途断流</th><th>429</th><th>5xx</th></tr></thead><tbody><tr><td>S1</td><td class="num">25</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>S2</td><td class="num">200</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>S3</td><td class="num">400</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div>
+<h3 id="h-46">23.3 资源与归因结果</h3>
+<div class="tbl-wrap"><table><thead><tr><th>并发</th><th>平台CPU峰值</th><th>平台内存峰值</th><th>连接池峰值</th><th>数据库连接池</th><th>供应商排队</th><th>供应商429</th><th>供应商5xx</th><th>判断</th></tr></thead><tbody><tr><td>25</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>50</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>100</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>200</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>400</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div>
+<h2 id="h-47">24. 最终报告必须给出的结论</h2>
+<ol><li><code>KIMI K3(压测)</code>端到端最高稳定并发是多少。</li><li>25、50、100、200、400各档的成功率、RPS、P95和P99。</li><li>性能拐点首次出现在哪一档。</li><li>首次出现429、5xx、超时或断流的是哪一档。</li><li>400并发是否通过；未通过时的主要失败类型。</li><li>最大吞吐量是多少，以及吞吐量从哪一档开始不再增长。</li><li>高压结束后是否能恢复到基线。</li><li>瓶颈更可能位于平台、KIMI K3供应商还是压测机，并列出证据。</li><li>平台鉴权、路由、连接池、计费和日志链路是否出现积压。</li><li>后续建议：根据本轮结果决定是否需要专项定位、固定时长稳态测试或供应商直连对照；本方案本身不自动执行第二轮。</li></ol>
+<h2 id="h-48">25. 执行检查清单</h2>
+<h3 id="h-49">压测前</h3>
+<ul><li>[ ] 已确认这是允许压测的测试环境。</li><li>[ ] 已通知开发、运维和供应商相关人员测试时间。</li><li>[ ] 已确认唯一模型为<code>KIMI K3(压测)</code>。</li><li>[ ] JMeter实际<code>model</code>值为<code>kimi-k3(压测)</code>。</li><li>[ ] 已确认API Key状态、额度、RPM、TPM及并发限制。</li><li>[ ] 已确认平台和供应商监控可用。</li><li>[ ] 已记录服务器初始CPU、内存、连接池和队列状态。</li><li>[ ] 已关闭JMeter查看结果树等GUI监听器。</li><li>[ ] 已确保压测机可用内存大于约5 GB。</li><li>[ ] 已确认本次只执行一轮完整流程，总正式压力请求35,750次。</li><li>[ ] 已使用非GUI命令执行。</li><li>[ ] 已完成1线程3次T0预检。</li><li>[ ] 已确认JSON断言和错误分类生效。</li></ul>
+<h3 id="h-50">压测中</h3>
+<ul><li>[ ] 每档使用独立JTL和HTML报告目录。</li><li>[ ] 每档之间等待3至5分钟。</li><li>[ ] 同步观察JMeter、平台和供应商资源。</li><li>[ ] 按401、403、429、平台5xx、上游5xx、超时和重置分类错误。</li><li>[ ] 达到停止条件时立即停止继续升压。</li><li>[ ] 记录每档准确开始和结束时间。</li></ul>
+<h3 id="h-51">压测后</h3>
+<ul><li>[ ] 完成1线程10次恢复验证。</li><li>[ ] 保留JTL、HTML报告和服务端监控证据。</li><li>[ ] 核对消费记录、计费记录和调用日志数量。</li><li>[ ] 填写非流式、流式和资源归因汇总表，并输出到桌面指定报告路径。</li><li>[ ] 输出最高稳定并发、拐点、错误点和恢复能力结论。</li><li>[ ] 没有服务端证据时，不武断认定供应商是瓶颈。</li></ul>
+<h2 id="h-52">26. 当前状态说明</h2>
+<p>截至本文档生成时，已完成以下只读核实：</p>
+<ul><li>平台账号登录成功。</li><li>API Key可成功访问<code>GET /v1/models</code>。</li><li>目标模型精确API值为<code>kimi-k3(压测)</code>。</li><li>平台当前文档确认支持OpenAI兼容的<code>POST /v1/chat/completions</code>。</li><li>平台模型体验前端确认使用流式聊天接口。</li></ul>
+<p>尚未执行：</p>
+<ul><li>尚未向模型发送“成都一日游”问题。</li><li>尚未验证聊天请求Body的单次成功响应。</li><li>尚未创建或执行JMeter JMX。</li><li>尚未执行任何并发、循环或梯度压测。</li></ul>
+<p>下一步实施顺序应为：先生成JMX并用1线程3次验证，核对返回结构和断言；释放本机内存至至少5 GB后，在明确开始压测时执行一次完整流程：非流式25、50、100、200、400五档，流式25、200、400三档，最后完成恢复验证并将Markdown与HTML报告输出到桌面<code>KIMI压测结果</code>目录。</p></article>
+  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../../压测总结.html">返回压测总结</a></footer>
+</div>
+</body>
+</html>
