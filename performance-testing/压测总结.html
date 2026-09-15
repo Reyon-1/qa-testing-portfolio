@@ -1511,17 +1511,17 @@ EMPTY_CONTENT：HTTP成功但回答为空
 SSE_INCOMPLETE：流式响应未正常结束</code></pre></div>
 <h2 id="kimi-plan-h-33">13. 正式执行命令</h2>
 <p>假设JMX位于：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\JMeter脚本\KIMI-K3-API性能压测.jmx</code></pre></div>
+<div class="code-block"><div class="code-lang">text</div><pre><code>JMeter脚本\KIMI-K3-API性能压测.jmx</code></pre></div>
 <p>先建立输出目录，但每次HTML报告目录必须不存在或为空。正式运行时关闭JMeter GUI，在PowerShell执行。</p>
 <p>通用格式：</p>
 <div class="code-block"><div class="code-lang">powershell</div><pre><code>$env:HEAP = "-Xms1g -Xmx2g -XX:MaxMetaspaceSize=256m"
 
-&amp; "C:\Users\ZhuanZ1\apache-jmeter-5.6.3\bin\jmeter.bat" `
+&amp; "apache-jmeter-5.6.3\bin\jmeter.bat" `
   -n `
-  -t "C:\Users\ZhuanZ1\Desktop\压测报告\JMeter脚本\KIMI-K3-API性能压测.jmx" `
-  -l "C:\Users\ZhuanZ1\Desktop\压测报告\results\P1-25x20.jtl" `
+  -t "JMeter脚本\KIMI-K3-API性能压测.jmx" `
+  -l "results\P1-25x20.jtl" `
   -e `
-  -o "C:\Users\ZhuanZ1\Desktop\压测报告\reports\P1-25x20" `
+  -o "reports\P1-25x20" `
   -Jthreads=25 `
   -Jloops=20 `
   -JrampSeconds=30 `
@@ -1589,7 +1589,7 @@ B：JMeter -&gt; KIMI K3供应商</code></pre></div>
 <p>当前API Key属于平台，因此当前方案测得的是“平台加KIMI K3供应商”的完整端到端性能，不是绕过平台后的纯供应商性能。</p>
 <h2 id="kimi-plan-h-42">22. 结果目录</h2>
 <p>建议每档独立保存：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\
+<div class="code-block"><div class="code-lang">text</div><pre><code>
 ├─ results\
 │  ├─ T0-baseline.jtl
 │  ├─ P1-25x20.jtl
@@ -1616,7 +1616,7 @@ B：JMeter -&gt; KIMI K3供应商</code></pre></div>
 ├─ test-notes\
 └─ KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
 <p>最终Markdown测试报告固定输出到：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
+<div class="code-block"><div class="code-lang">text</div><pre><code>KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
 <p>各阶段JMeter HTML报告也全部位于桌面<code>KIMI压测结果\reports</code>目录下。即使某阶段触发停止条件，仍须基于已经完成的阶段生成一份“部分执行报告”，不得丢失已获得的数据。</p>
 <h2 id="kimi-plan-h-43">23. 最终结果汇总表</h2>
 <h3 id="kimi-plan-h-44">23.1 非流式容量结果</h3>

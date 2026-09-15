@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 运营平台 GLM 5.2 API性能压测方案</title>
+<title>示例运营平台 GLM 5.2 API性能压测方案</title>
 <style>
 :root{
   --page:#f1f4f9; --card:#fff; --card-2:#f8fafc;
@@ -100,17 +100,17 @@ footer a{color:var(--blue);text-decoration:none}
 <body>
 <div class="bar"></div>
 <div class="top"><div class="top-in">
-  <a class="back" href="../../../压测总结.html">← 返回压测总结</a>
+  <a class="back" href="../../压测总结.html">← 返回压测总结</a>
   <span class="top-t">GLM 5.2 压测方案</span>
 </div></div>
 <div class="wrap">
   <div class="hero">
-    <h1>AI 运营平台 GLM 5.2 API性能压测方案</h1>
+    <h1>示例运营平台 GLM 5.2 API性能压测方案</h1>
     <p class="sub">请求口径、max_tokens 取值依据、梯度与两级闸门</p>
     <div class="chips"><span class="chip">文档日期 <b>2026-09-11</b></span><span class="chip">模型 <b>glm-5.2-test</b></span><span class="chip">读取超时 <b>300 秒</b></span></div>
   </div>
   
-  <article><h1 id="h-0">AI 运营平台 GLM 5.2 API性能压测方案</h1>
+  <article><h1 id="h-0">示例运营平台 GLM 5.2 API性能压测方案</h1>
 <blockquote><p>测试环境：<code>http://198.51.100.10/v1</code>  </p><p>唯一模型：<code>glm-5.2-test</code>  </p><p>工具：Apache JMeter 5.6.3，非GUI模式  </p><p>固定问题：<code>给出一套成都旅游一日游方案，50字左右</code></p></blockquote>
 <h2 id="h-1">请求口径</h2>
 <div class="code-block"><div class="code-lang">json</div><pre><code>{
@@ -133,7 +133,7 @@ footer a{color:var(--blue);text-decoration:none}
 <h2 id="h-3">统计口径</h2>
 <p>流式和非流式分开统计。每档记录Samples、成功率、RPS、Avg、P50、P90、P95、P99、Max、Connect、Latency、401、403、429、5xx、超时、重置、空正文、非法JSON和SSE未完成。JMeter普通Latency不能命名为TTFT；真正首Token时间需要平台或供应商分段日志。</p>
 <p>所有结果仅代表“Token平台 + GLM 5.2供应商”的端到端链路。没有平台和供应商服务端监控时，不单凭JMeter结果确定瓶颈归属。</p></article>
-  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../../压测总结.html">返回压测总结</a></footer>
+  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../压测总结.html">返回压测总结</a></footer>
 </div>
 </body>
 </html>

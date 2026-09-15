@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 运营平台 KIMI K3 API 性能压测方案</title>
+<title>示例运营平台 KIMI K3 API 性能压测方案</title>
 <style>
 :root{
   --page:#f1f4f9; --card:#fff; --card-2:#f8fafc;
@@ -100,24 +100,24 @@ footer a{color:var(--blue);text-decoration:none}
 <body>
 <div class="bar"></div>
 <div class="top"><div class="top-in">
-  <a class="back" href="../../../压测总结.html">← 返回压测总结</a>
+  <a class="back" href="../../压测总结.html">← 返回压测总结</a>
   <span class="top-t">KIMI K3 压测方案</span>
 </div></div>
 <div class="wrap">
   <div class="hero">
-    <h1>AI 运营平台 KIMI K3 API 性能压测方案</h1>
+    <h1>示例运营平台 KIMI K3 API 性能压测方案</h1>
     <p class="sub">测试目标、统一数据口径、梯度设计、闸门口径与证据采集要求</p>
     <div class="chips"><span class="chip">文档日期 <b>2026-09-11</b></span><span class="chip">唯一模型 <b>kimi-k3(压测)</b></span><span class="chip">目标并发 <b>25 / 50 / 100 / 200 / 400</b></span></div>
   </div>
   <nav class="toc"><div class="toc-t">本页目录</div><ul><li><a href="#h-1">1. 测试结论先行</a></li><li><a href="#h-2">2. 已核实的环境信息</a></li><li><a href="#h-5">3. 测试目标</a></li><li><a href="#h-8">4. 统一测试数据与请求口径</a></li><li><a href="#h-12">5. 为什么主测试采用API Key直调</a></li><li><a href="#h-13">6. 整体执行顺序</a></li><li><a href="#h-14">7. T0：压测前预检</a></li><li><a href="#h-17">8. T1：非流式五级梯度容量测试</a></li><li><a href="#h-21">9. T2：流式连接专项测试</a></li><li><a href="#h-22">10. T3：恢复性验证</a></li><li><a href="#h-23">11. JMeter测试计划组件树</a></li><li><a href="#h-24">12. JMeter逐项配置</a></li><li><a href="#h-33">13. 正式执行命令</a></li><li><a href="#h-34">14. JTL保存原则</a></li><li><a href="#h-35">15. 每级升压条件</a></li><li><a href="#h-36">16. 停止条件</a></li><li><a href="#h-37">17. 必须采集的JMeter指标</a></li><li><a href="#h-38">18. 平台侧监控</a></li><li><a href="#h-39">19. KIMI K3供应商侧监控</a></li><li><a href="#h-40">20. 平台与供应商瓶颈归因</a></li><li><a href="#h-41">21. 供应商直连对照测试</a></li><li><a href="#h-42">22. 结果目录</a></li><li><a href="#h-43">23. 最终结果汇总表</a></li><li><a href="#h-47">24. 最终报告必须给出的结论</a></li><li><a href="#h-48">25. 执行检查清单</a></li><li><a href="#h-52">26. 当前状态说明</a></li></ul></nav>
-  <article><h1 id="h-0">AI 运营平台 KIMI K3 API 性能压测方案</h1>
+  <article><h1 id="h-0">示例运营平台 KIMI K3 API 性能压测方案</h1>
 <blockquote><p>文档日期：2026-09-11  </p><p>当前状态：单轮正式方案已定稿，尚未启动模型调用和性能压测  </p><p>测试环境：<code>198.51.100.10</code>  </p><p>压测工具：Apache JMeter 5.6.3，Java 17  </p><p>唯一测试模型：<strong>KIMI K3(压测)</strong>  </p><p>API 请求中必须使用的精确模型值：<code>kimi-k3(压测)</code></p></blockquote>
 <h2 id="h-1">1. 测试结论先行</h2>
 <p>本次不通过浏览器反复操作“模型体验”页面发压，而是使用 JMeter 直接调用平台对外提供的 OpenAI 兼容接口：</p>
 <div class="code-block"><div class="code-lang">http</div><pre><code>POST http://198.51.100.10/v1/chat/completions</code></pre></div>
 <p>该方式会真实经过以下完整链路：</p>
 <div class="code-block"><div class="code-lang">text</div><pre><code>JMeter
-  -&gt; AI 运营平台API网关
+  -&gt; 示例运营平台API网关
   -&gt; API Key鉴权
   -&gt; 模型权限、额度和限流校验
   -&gt; 固定模型路由
@@ -127,7 +127,7 @@ footer a{color:var(--blue);text-decoration:none}
   -&gt; 用量、计费和调用日志记录
   -&gt; JMeter</code></pre></div>
 <p>因此它最适合同时评估：</p>
-<ol><li>AI 运营平台的API网关、鉴权、路由、连接池、日志和计费链路负载。</li><li><code>KIMI K3(压测)</code>背后供应商的并发承载、排队、限流和推理性能。</li><li>整条端到端链路在最高400并发线程下的可用性、吞吐量和响应时间。</li></ol>
+<ol><li>示例运营平台的API网关、鉴权、路由、连接池、日志和计费链路负载。</li><li><code>KIMI K3(压测)</code>背后供应商的并发承载、排队、限流和推理性能。</li><li>整条端到端链路在最高400并发线程下的可用性、吞吐量和响应时间。</li></ol>
 <p>本方案禁止使用以下模型：</p>
 <ul><li><code>自动路由</code></li><li><code>deepseek-v4-pro-qinwenxiu</code></li><li>任何其他模型</li></ul>
 <p>原因：自动路由可能把请求分配至不同供应商，无法准确评估KIMI K3供应商负载；其他模型不在本次任务范围内。</p>
@@ -317,17 +317,17 @@ EMPTY_CONTENT：HTTP成功但回答为空
 SSE_INCOMPLETE：流式响应未正常结束</code></pre></div>
 <h2 id="h-33">13. 正式执行命令</h2>
 <p>假设JMX位于：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\JMeter脚本\KIMI-K3-API性能压测.jmx</code></pre></div>
+<div class="code-block"><div class="code-lang">text</div><pre><code>JMeter脚本\KIMI-K3-API性能压测.jmx</code></pre></div>
 <p>先建立输出目录，但每次HTML报告目录必须不存在或为空。正式运行时关闭JMeter GUI，在PowerShell执行。</p>
 <p>通用格式：</p>
 <div class="code-block"><div class="code-lang">powershell</div><pre><code>$env:HEAP = "-Xms1g -Xmx2g -XX:MaxMetaspaceSize=256m"
 
-&amp; "C:\Users\ZhuanZ1\apache-jmeter-5.6.3\bin\jmeter.bat" `
+&amp; "apache-jmeter-5.6.3\bin\jmeter.bat" `
   -n `
-  -t "C:\Users\ZhuanZ1\Desktop\压测报告\JMeter脚本\KIMI-K3-API性能压测.jmx" `
-  -l "C:\Users\ZhuanZ1\Desktop\压测报告\results\P1-25x20.jtl" `
+  -t "JMeter脚本\KIMI-K3-API性能压测.jmx" `
+  -l "results\P1-25x20.jtl" `
   -e `
-  -o "C:\Users\ZhuanZ1\Desktop\压测报告\reports\P1-25x20" `
+  -o "reports\P1-25x20" `
   -Jthreads=25 `
   -Jloops=20 `
   -JrampSeconds=30 `
@@ -388,14 +388,14 @@ request_end</code></pre></div>
 <p>如果后续需要把平台开销和供应商开销严格拆开，需要开发或运维另行提供：</p>
 <ul><li>KIMI K3供应商真实API地址。</li><li>供应商专用测试Key。</li><li>供应商模型精确名称。</li><li>供应商并发、RPM、TPM限制。</li><li>是否允许400并发直压。</li></ul>
 <p>然后使用相同问题、相同参数和相同梯度分别执行：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>A：JMeter -&gt; AI 运营平台 -&gt; KIMI K3供应商
+<div class="code-block"><div class="code-lang">text</div><pre><code>A：JMeter -&gt; 示例运营平台 -&gt; KIMI K3供应商
 B：JMeter -&gt; KIMI K3供应商</code></pre></div>
 <p>近似计算：</p>
 <div class="code-block"><div class="code-lang">text</div><pre><code>平台附加开销 = A端到端耗时 - B供应商直连耗时</code></pre></div>
 <p>当前API Key属于平台，因此当前方案测得的是“平台加KIMI K3供应商”的完整端到端性能，不是绕过平台后的纯供应商性能。</p>
 <h2 id="h-42">22. 结果目录</h2>
 <p>建议每档独立保存：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\
+<div class="code-block"><div class="code-lang">text</div><pre><code>
 ├─ results\
 │  ├─ T0-baseline.jtl
 │  ├─ P1-25x20.jtl
@@ -422,7 +422,7 @@ B：JMeter -&gt; KIMI K3供应商</code></pre></div>
 ├─ test-notes\
 └─ KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
 <p>最终Markdown测试报告固定输出到：</p>
-<div class="code-block"><div class="code-lang">text</div><pre><code>C:\Users\ZhuanZ1\Desktop\压测报告\KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
+<div class="code-block"><div class="code-lang">text</div><pre><code>KIMI-K3性能压测报告-2026-09-11.md</code></pre></div>
 <p>各阶段JMeter HTML报告也全部位于桌面<code>KIMI压测结果\reports</code>目录下。即使某阶段触发停止条件，仍须基于已经完成的阶段生成一份“部分执行报告”，不得丢失已获得的数据。</p>
 <h2 id="h-43">23. 最终结果汇总表</h2>
 <h3 id="h-44">23.1 非流式容量结果</h3>
@@ -446,7 +446,7 @@ B：JMeter -&gt; KIMI K3供应商</code></pre></div>
 <p>尚未执行：</p>
 <ul><li>尚未向模型发送“成都一日游”问题。</li><li>尚未验证聊天请求Body的单次成功响应。</li><li>尚未创建或执行JMeter JMX。</li><li>尚未执行任何并发、循环或梯度压测。</li></ul>
 <p>下一步实施顺序应为：先生成JMX并用1线程3次验证，核对返回结构和断言；释放本机内存至至少5 GB后，在明确开始压测时执行一次完整流程：非流式25、50、100、200、400五档，流式25、200、400三档，最后完成恢复验证并将Markdown与HTML报告输出到桌面<code>KIMI压测结果</code>目录。</p></article>
-  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../../压测总结.html">返回压测总结</a></footer>
+  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../压测总结.html">返回压测总结</a></footer>
 </div>
 </body>
 </html>

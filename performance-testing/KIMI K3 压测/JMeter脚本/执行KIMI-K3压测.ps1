@@ -7,8 +7,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Root = 'C:\Users\ZhuanZ1\Desktop\压测报告\KIMI K3 压测'
-$JMeterHome = 'C:\Users\ZhuanZ1\apache-jmeter-5.6.3'
+$Root = 'KIMI K3 压测'
+$JMeterHome = 'apache-jmeter-5.6.3'
 $JMeter = Join-Path $JMeterHome 'bin\jmeter.bat'
 $Jmx = Join-Path $Root 'JMeter脚本\KIMI-K3-API性能压测.jmx'
 $ApiKey = 'sk-REPLACE_WITH_YOUR_KEY'

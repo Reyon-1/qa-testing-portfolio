@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 运营平台 GLM 5.2 API性能压测报告</title>
+<title>示例运营平台 GLM 5.2 API性能压测报告</title>
 <style>
 :root{
   --page:#f1f4f9;--card:#fff;--card-2:#f8fafc;--line:#e3e9f2;--line-strong:#cdd8e8;
@@ -92,12 +92,12 @@ footer a{color:var(--blue);text-decoration:none}
 <body>
 <div class="bar"></div>
 <div class="top"><div class="top-in">
-  <a class="back" href="../../压测总结-单文件版.html">← 返回压测总结</a>
+  <a class="back" href="../压测总结.html">← 返回压测总结</a>
   <span class="top-t">GLM 5.2 · 20260913-133846</span>
 </div></div>
 <div class="wrap">
   <div class="hero">
-    <h1>AI 运营平台 GLM 5.2 API性能压测报告</h1>
+    <h1>示例运营平台 GLM 5.2 API性能压测报告</h1>
     <p class="sub">端到端闭环并发梯度压测 · 已合并 2026-09-13 续测结果</p>
     <div class="chips">
       <span class="chip">模型 <b>glm-5.2-test</b></span>
@@ -107,7 +107,7 @@ footer a{color:var(--blue);text-decoration:none}
     </div>
   </div>
   <nav class="toc"><div class="toc-t">本页目录</div><ul><li><a href="#h-1">一、结论摘要</a></li><li><a href="#h-2">二、执行范围</a></li><li><a href="#h-3">三、非流式性能结果</a></li><li><a href="#h-4">四、100线程专项分析</a></li><li><a href="#h-5">五、错误统计</a></li><li><a href="#h-6">六、闸门与停止口径</a></li><li><a href="#h-7">七、压测机资源</a></li><li><a href="#h-8">八、恢复能力</a></li><li><a href="#h-9">九、最终判定</a></li><li><a href="#h-10">十、下一步建议</a></li><li><a href="#h-11">十一、2026-09-13 续测（并入本报告）</a></li><li><a href="#h-22">十二、证据文件</a></li><li><a href="#h-23">十三、证据边界</a></li></ul></nav>
-  <article><h1 id="h-0">AI 运营平台 GLM 5.2 API性能压测报告</h1>
+  <article><h1 id="h-0">示例运营平台 GLM 5.2 API性能压测报告</h1>
 <blockquote><p>测试日期：2026-09-11、2026-09-13  </p><p>主要运行编号：<code>20260911-224032</code>、<code>20260911-225442</code>、<code>20260911-231013</code>、<code>20260913-133846</code>  </p><p>测试接口：<code>POST http://198.51.100.10/v1/chat/completions</code>  </p><p>当前模型API值：<code>glm-5.2-test</code>（原名称：<code>glm-5.2(压测)</code>）  </p><p>固定问题：<code>给出一套成都旅游一日游方案，50字左右</code>  </p><p>请求参数：<code>temperature=0.2</code>、<code>max_tokens=32768</code>、读取超时300秒  </p><p>执行方式：Apache JMeter 5.6.3，非GUI模式，闭环并发模型  </p><p>文档说明：本报告已合并 2026-09-13 续测结果（见第十一章），为首轮与续测的完整结论，不再单独维护续测报告。</p></blockquote>
 <h2 id="h-1">一、结论摘要</h2>
 <p>GLM 5.2在25线程和50线程阶段均完成全部计划请求，成功率分别为98.0%和98.2%。两档错误率均低于当前10%阶段升级闸门，但仍存在300秒读取超时，不能表述为零错误稳定运行。</p>
@@ -182,7 +182,7 @@ footer a{color:var(--blue);text-decoration:none}
 <h2 id="h-23">十三、证据边界</h2>
 <p>本报告测得的是“JMeter → Token平台 → GLM 5.2供应商 → Token平台 → JMeter”的端到端性能。当前没有平台服务器CPU、线程池、上游连接池、数据库/计费队列以及供应商侧排队和GPU指标，因此不能只凭客户端502和响应时间断定责任一定属于平台或供应商。</p>
 <p>本报告只汇总真实执行结果。未执行的200/400线程和正式流式并发不作性能判定；欠费产生的HTTP 400仅作为阻塞证据，不计入正常负载阶段错误率。后续结果统一追加到本报告，不再创建单独续测报告。</p></article>
-  <footer>本报告已合并首轮与续测全部结果 · 数值未作任何修改 · <a href="../../压测总结-单文件版.html">返回压测总结</a></footer>
+  <footer>本报告已合并首轮与续测全部结果 · 数值未作任何修改 · <a href="../压测总结.html">返回压测总结</a></footer>
 </div>
 </body>
 </html>

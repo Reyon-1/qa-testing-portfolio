@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 运营平台 KIMI K3 API性能压测报告</title>
+<title>示例运营平台 KIMI K3 API性能压测报告</title>
 <style>
 :root{
   --page:#f1f4f9; --card:#fff; --card-2:#f8fafc;
@@ -100,17 +100,17 @@ footer a{color:var(--blue);text-decoration:none}
 <body>
 <div class="bar"></div>
 <div class="top"><div class="top-in">
-  <a class="back" href="../../压测总结.html">← 返回压测总结</a>
+  <a class="back" href="../压测总结.html">← 返回压测总结</a>
   <span class="top-t">KIMI K3 · 20260911-204746</span>
 </div></div>
 <div class="wrap">
   <div class="hero">
-    <h1>AI 运营平台 KIMI K3 API性能压测报告</h1>
+    <h1>示例运营平台 KIMI K3 API性能压测报告</h1>
     <p class="sub">端到端闭环并发梯度压测 · 含 2026-09-13 续测门禁记录</p>
     <div class="chips"><span class="chip">模型 <b>kimi-k3(压测)</b></span><span class="chip">运行编号 <b>20260911-204746</b></span><span class="chip">时间 <b>2026-09-11 / 09-13</b></span><span class="chip">工具 <b>JMeter 5.6.3</b></span></div>
   </div>
   <nav class="toc"><div class="toc-t">本页目录</div><ul><li><a href="#h-1">一、结论摘要</a></li><li><a href="#h-2">二、执行范围</a></li><li><a href="#h-3">三、非流式性能结果</a></li><li><a href="#h-4">四、100线程专项分析</a></li><li><a href="#h-5">五、错误统计</a></li><li><a href="#h-6">六、压测机资源</a></li><li><a href="#h-7">七、恢复能力</a></li><li><a href="#h-8">八、最终判定</a></li><li><a href="#h-9">九、下一步建议</a></li><li><a href="#h-10">十、证据文件</a></li><li><a href="#h-11">十一、证据边界</a></li><li><a href="#h-12">十二、2026-09-13续测门禁记录（合并记录）</a></li></ul></nav>
-  <article><h1 id="h-0">AI 运营平台 KIMI K3 API性能压测报告</h1>
+  <article><h1 id="h-0">示例运营平台 KIMI K3 API性能压测报告</h1>
 <blockquote><p>测试日期：2026-09-11  </p><p>正式运行编号：<code>20260911-204746</code>  </p><p>测试接口：<code>POST http://198.51.100.10/v1/chat/completions</code>  </p><p>唯一测试模型：<code>kimi-k3(压测)</code>  </p><p>固定问题：<code>给出一套成都旅游一日游方案，50字左右</code>  </p><p>执行方式：Apache JMeter 5.6.3，非GUI模式，闭环并发模型</p></blockquote>
 <h2 id="h-1">一、结论摘要</h2>
 <p>本轮已确认的最高稳定并发为 <strong>50线程</strong>。在50线程、1,000个请求下成功率为100%，无429、5xx、超时或连接重置，端到端吞吐量为1.781 RPS，P95为33.080秒，P99为39.434秒。</p>
@@ -149,7 +149,7 @@ footer a{color:var(--blue);text-decoration:none}
 <p>后续 KIMI 结果继续追加到本主报告，不另建续测报告。本次仅执行恢复后的单请求门禁检查，未启动 JMeter 并发。</p>
 <ul><li><code>GET /v1/models</code>：成功，模型列表包含 <code>kimi-k3-test</code>。</li><li>非流式健康请求：HTTP 400，耗时0.707秒。</li><li>错误：<code>Access denied, please make sure your account is in good standing</code>，错误标识为 <code>overdue-payment</code>。</li><li>判定：账户/上游状态未恢复，KIMI并发重测未执行；不能将该结果计入性能失败率。</li></ul>
 <p>证据文件：<code>运行日志\\precheck-kimi-k3-test-20260913.json</code>。</p></article>
-  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../../压测总结.html">返回压测总结</a></footer>
+  <footer>本文由桌面压测报告 Markdown 原文转换生成 · 数值未作任何修改 · <a href="../压测总结.html">返回压测总结</a></footer>
 </div>
 </body>
 </html>
