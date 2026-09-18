@@ -1,0 +1,116 @@
+{
+  "info": {
+    "_postman_id": "4f88096b-c5fc-4315-af7d-4f1d6f99b024",
+    "name": "企业内部综合管理系统接口测试",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57374678"
+  },
+  "item": [
+    {
+      "name": "01-登录",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"admin123\",\r\n  \"code\": \"15\",\r\n  \"uuid\": \"ec7bb01582464671acd732a1fa61058c\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "00-获取验证码",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/captchaImage",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "captchaImage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03-用户列表",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{bearer_token_0kx3}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"deptName\":\"测试部门\",\"parentId\":100,\"orderNum\":99,\"leader\":\"测试\",\"phone\":\"13800138000\",\"status\":\"0\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/monitor/logininfor/list?pageNum=1&pageSize=10\t",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "monitor",
+            "logininfor",
+            "list"
+          ],
+          "query": [
+            {
+              "key": "pageNum",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10\t"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "bearer_token_0kx3",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0xi6",
+      "secret": true
+    }
+  ]
+}
