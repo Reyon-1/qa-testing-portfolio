@@ -1,20 +1,18 @@
 [CmdletBinding()]
 param(
     [switch]$PreflightOnly,
-    [ValidateSet('G2','G3','T0-S','S1','S2','S3','S4','S5','T3-S')]
-    [string]$StartAt = 'G2',
     [int]$CooldownScalePercent = 100
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Root = 'GLM 5.2 压测'
+$Root = 'KIMI K3 压测'
 $JMeterHome = 'apache-jmeter-5.6.3'
 $JMeter = Join-Path $JMeterHome 'bin\jmeter.bat'
-$Jmx = Join-Path $Root 'JMeter脚本\GLM-5.2-API性能压测.jmx'
+$Jmx = Join-Path $Root 'JMeter脚本\KIMI-K3-API性能压测.jmx'
 $ApiKey = 'sk-REPLACE_WITH_YOUR_KEY'
-$Model = 'glm-5.2-test'
+$Model = 'kimi-k3-test'
 $BaseUri = 'http://198.51.100.10'
 $RunId = Get-Date -Format 'yyyyMMdd-HHmmss'
 $StartedAt = Get-Date
@@ -33,15 +31,16 @@ $RunLog = Join-Path $LogDir '执行总日志.txt'
 $env:HEAP = '-Xms1g -Xmx2g -XX:MaxMetaspaceSize=256m'
 
 $Stages = @(
-    [pscustomobject]@{ Name='G2';   Mode='非流式门禁'; Threads=1;   Loops=3;  Ramp=1;   Stream=$false; Cooldown=0;   Planned=3 },
-    [pscustomobject]@{ Name='G3';   Mode='流式门禁';   Threads=1;   Loops=1;  Ramp=1;   Stream=$true;  Cooldown=0;   Planned=1 },
-    [pscustomobject]@{ Name='T0-S'; Mode='流式基线';   Threads=1;   Loops=3;  Ramp=1;   Stream=$true;  Cooldown=0;   Planned=3 },
-    [pscustomobject]@{ Name='S1';   Mode='流式';       Threads=50;  Loops=20; Ramp=60;  Stream=$true;  Cooldown=180; Planned=1000 },
-    [pscustomobject]@{ Name='S2';   Mode='流式';       Threads=100; Loops=16; Ramp=120; Stream=$true;  Cooldown=240; Planned=1600 },
-    [pscustomobject]@{ Name='S3';   Mode='流式';       Threads=200; Loops=13; Ramp=180; Stream=$true;  Cooldown=240; Planned=2600 },
-    [pscustomobject]@{ Name='S4';   Mode='流式';       Threads=400; Loops=15; Ramp=300; Stream=$true;  Cooldown=300; Planned=6000 },
-    [pscustomobject]@{ Name='S5';   Mode='流式';       Threads=500; Loops=17; Ramp=360; Stream=$true;  Cooldown=300; Planned=8500 },
-    [pscustomobject]@{ Name='T3-S'; Mode='流式恢复';   Threads=1;   Loops=10; Ramp=1;   Stream=$true;  Cooldown=0;   Planned=10 }
+    [pscustomobject]@{ Name='T0'; Mode='非流式预检'; Threads=1;   Loops=3;  Ramp=1;   Stream=$false; Cooldown=0;   Planned=3 },
+    [pscustomobject]@{ Name='P1'; Mode='非流式';     Threads=25;  Loops=20; Ramp=30;  Stream=$false; Cooldown=180; Planned=500 },
+    [pscustomobject]@{ Name='P2'; Mode='非流式';     Threads=50;  Loops=20; Ramp=60;  Stream=$false; Cooldown=180; Planned=1000 },
+    [pscustomobject]@{ Name='P3'; Mode='非流式';     Threads=100; Loops=20; Ramp=120; Stream=$false; Cooldown=240; Planned=2000 },
+    [pscustomobject]@{ Name='P4'; Mode='非流式';     Threads=200; Loops=30; Ramp=180; Stream=$false; Cooldown=300; Planned=6000 },
+    [pscustomobject]@{ Name='P5'; Mode='非流式';     Threads=400; Loops=50; Ramp=300; Stream=$false; Cooldown=300; Planned=20000 },
+    [pscustomobject]@{ Name='S1'; Mode='流式';       Threads=25;  Loops=10; Ramp=30;  Stream=$true;  Cooldown=180; Planned=250 },
+    [pscustomobject]@{ Name='S2'; Mode='流式';       Threads=200; Loops=10; Ramp=180; Stream=$true;  Cooldown=240; Planned=2000 },
+    [pscustomobject]@{ Name='S3'; Mode='流式';       Threads=400; Loops=10; Ramp=300; Stream=$true;  Cooldown=120; Planned=4000 },
+    [pscustomobject]@{ Name='T3'; Mode='恢复验证';   Threads=1;   Loops=10; Ramp=1;   Stream=$false; Cooldown=0;   Planned=10 }
 )
 
 function Write-RunLog {
@@ -111,11 +110,9 @@ function Get-StageSummary {
     $codes5xx = @($rows | Where-Object { $_.responseCode -match '^5\d\d$' }).Count
     $timeouts = @($rows | Where-Object { $_.failureMessage -match '(?i)timeout|timed out' -or $_.responseMessage -match '(?i)timeout|timed out' }).Count
     $resets = @($rows | Where-Object { $_.failureMessage -match '(?i)connection reset|broken pipe|premature' -or $_.responseMessage -match '(?i)connection reset|broken pipe|premature' }).Count
-    $sseIncomplete = @($rows | Where-Object { $_.failureMessage -match 'SSE_(CONTENT_TYPE|NO_EVENTS|INCOMPLETE|DUPLICATE_DONE|DONE_NOT_LAST|NO_CHOICES|INVALID_JSON|BUSINESS_ERROR)' }).Count
-    $emptyContent = @($rows | Where-Object { $_.failureMessage -match '(SSE_)?EMPTY_CONTENT' }).Count
-    $invalidJson = @($rows | Where-Object { $_.failureMessage -match '(SSE_)?INVALID_JSON' }).Count
-    $achievedMaxThreads = (($rows | ForEach-Object { [int]$_.allThreads } | Measure-Object -Maximum).Maximum)
-    $concurrencyRate = [math]::Round(100 * $achievedMaxThreads / $Stage.Threads, 2)
+    $sseIncomplete = @($rows | Where-Object { $_.failureMessage -match 'SSE_(INCOMPLETE|NO_DATA|BUSINESS_ERROR)' }).Count
+    $emptyContent = @($rows | Where-Object { $_.failureMessage -match 'EMPTY_CONTENT' }).Count
+    $invalidJson = @($rows | Where-Object { $_.failureMessage -match 'INVALID_JSON' }).Count
 
     $monitorRows = @()
     if (Test-Path -LiteralPath $MonitorPath) { $monitorRows = @(Import-Csv -LiteralPath $MonitorPath | Where-Object { $_.cpu_percent -match '^\d' }) }
@@ -134,7 +131,6 @@ function Get-StageSummary {
         MinMs=[math]::Round((($elapsed | Measure-Object -Minimum).Minimum),2); MaxMs=[math]::Round((($elapsed | Measure-Object -Maximum).Maximum),2)
         Http401=$codes401; Http403=$codes403; Http429=$codes429; Http5xx=$codes5xx
         Timeouts=$timeouts; Resets=$resets; SseIncomplete=$sseIncomplete; EmptyContent=$emptyContent; InvalidJson=$invalidJson
-        AchievedMaxThreads=$achievedMaxThreads; ConcurrencyAchievementRate=$concurrencyRate
         ClientCpuAvg=$cpuAvg; ClientCpuPeak=$cpuPeak; ClientMemoryMinMB=$memoryMin; JMeterExitCode=$ExitCode
     }
 }
@@ -145,45 +141,17 @@ function Test-StageGate {
     if ($Summary.JMeterExitCode -ne 0) { $reasons.Add("JMeter退出码=$($Summary.JMeterExitCode)") }
     if ($Summary.Samples -ne $Stage.Planned) { $reasons.Add("样本数$($Summary.Samples)不等于计划$($Stage.Planned)") }
     if ($Summary.Http401 -gt 0 -or $Summary.Http403 -gt 0) { $reasons.Add("出现鉴权错误：401=$($Summary.Http401)，403=$($Summary.Http403)") }
-    if ($Summary.ErrorRate -ge 10) { $reasons.Add("总体失败率达到10%，禁止继续升级") }
-    if ($Summary.Http5xx * 100 / $Summary.Samples -ge 10) { $reasons.Add("5xx错误率达到10%，禁止继续升级") }
-    if ($Summary.Http429 * 100 / $Summary.Samples -ge 10) { $reasons.Add("429错误率达到10%，禁止继续升级") }
-    if (($Summary.Timeouts + $Summary.Resets) * 100 / $Summary.Samples -ge 10) { $reasons.Add("超时/连接重置达到10%，禁止继续升级") }
+    if ($Summary.Http5xx * 100 / $Summary.Samples -ge 10) { $reasons.Add("5xx错误率达到10%") }
+    if ($Summary.Http429 * 100 / $Summary.Samples -ge 5) { $reasons.Add("429错误率达到5%") }
+    if (($Summary.Timeouts + $Summary.Resets) * 100 / $Summary.Samples -ge 10) { $reasons.Add("超时/连接重置达到10%") }
     if ($Summary.ClientMemoryMinMB -gt 0 -and $Summary.ClientMemoryMinMB -lt 256) { $reasons.Add("压测机可用内存低于256MB") }
     if ($Summary.ClientCpuAvg -ge 85) { $reasons.Add("压测机平均CPU达到85%") }
-    if ($Stage.Name -in @('S1','S2','S3','S4','S5') -and $Summary.ConcurrencyAchievementRate -lt 90) { $reasons.Add("实际最大并发$($Summary.AchievedMaxThreads)，仅达到目标并发的$($Summary.ConcurrencyAchievementRate)%") }
-    if ($Stage.Name -eq 'G2' -and ($Summary.Success -ne 3 -or $Summary.ErrorRate -gt 0)) { $reasons.Add('G2非流式门禁未连续3次成功') }
-    if ($Stage.Name -eq 'G3' -and ($Summary.Success -ne 1 -or $Summary.ErrorRate -gt 0)) { $reasons.Add('G3流式门禁未成功') }
-    if ($Stage.Name -eq 'T0-S' -and ($Summary.Success -ne 3 -or $Summary.ErrorRate -gt 0)) { $reasons.Add('T0-S流式基线未连续3次成功') }
-    if ($Stage.Stream -and $Summary.SseIncomplete * 100 / $Summary.Samples -ge 10) { $reasons.Add("流式响应不完整率达到10%，禁止继续升级") }
-    if ($Summary.EmptyContent * 100 / $Summary.Samples -ge 10) { $reasons.Add("业务成功响应正文为空率达到10%，禁止继续升级") }
-    if ($Summary.InvalidJson * 100 / $Summary.Samples -ge 10) { $reasons.Add("非流式非法JSON率达到10%，禁止继续升级") }
+    if ($Stage.Name -eq 'T0' -and ($Summary.Success -ne 3 -or $Summary.ErrorRate -gt 0)) { $reasons.Add('T0未连续3次成功') }
+    if ($Stage.Stream -and $Summary.SseIncomplete -gt 0) { $reasons.Add("流式响应不完整=$($Summary.SseIncomplete)") }
     if ($T0Summary -and $PreviousSummary -and $Summary.P95Ms -ge (3 * $T0Summary.P95Ms) -and $Summary.P95Ms -gt $PreviousSummary.P95Ms -and $Summary.ErrorRate -ge 1) {
         $reasons.Add('P95超过基线3倍、继续恶化且错误率达到1%')
     }
     return $reasons
-}
-
-function Get-LiveGateDecision {
-    param([string]$JtlPath)
-    if (-not (Test-Path -LiteralPath $JtlPath)) { return $null }
-    try { $rows = @(Import-Csv -LiteralPath $JtlPath -ErrorAction Stop) } catch { return $null }
-    if ($rows.Count -eq 0) { return $null }
-    $authRows = @($rows | Where-Object { $_.responseCode -in @('401','403') })
-    if ($authRows.Count -gt 0) {
-        return [pscustomobject]@{ Stop=$true; Reason="检测到401/403鉴权错误，立即停止"; Samples=$rows.Count; WindowFailures=0; WindowRate=0 }
-    }
-    if ($rows.Count -lt 50) { return [pscustomobject]@{ Stop=$false; Reason=''; Samples=$rows.Count; WindowFailures=0; WindowRate=0 } }
-    $window = @($rows | Select-Object -Last 100)
-    $failed = @($window | Where-Object { $_.success -ne 'true' }).Count
-    $rate = [math]::Round(100 * $failed / $window.Count, 2)
-    return [pscustomobject]@{
-        Stop=($rate -ge 30)
-        Reason="最近$($window.Count)个完成样本失败率=$rate%（$failed/$($window.Count)）"
-        Samples=$rows.Count
-        WindowFailures=$failed
-        WindowRate=$rate
-    }
 }
 
 function Invoke-Stage {
@@ -195,7 +163,7 @@ function Invoke-Stage {
     $consoleLog = Join-Path $LogDir "$suffix-console.log"
     $monitorPath = Join-Path $LogDir "$suffix-client-resources.csv"
     $sentinel = Join-Path $LogDir "$suffix-monitor.running"
-    $preview = if ($Stage.Name -in @('G2','G3','T0-S')) { Join-Path $LogDir "$($Stage.Name)-first-response.txt" } else { '' }
+    $preview = if ($Stage.Name -eq 'T0') { Join-Path $LogDir 'T0-first-response.txt' } else { '' }
     $accept = if ($Stage.Stream) { 'text/event-stream' } else { 'application/json' }
     $streamText = $Stage.Stream.ToString().ToLowerInvariant()
 
@@ -214,52 +182,26 @@ function Invoke-Stage {
         '-Jjmeter.save.saveservice.successful=true','-Jjmeter.save.saveservice.failure_message=true',
         '-Jjmeter.save.saveservice.bytes=true','-Jjmeter.save.saveservice.sent_bytes=true'
     )
-    $stderrLog = Join-Path $LogDir "$suffix-stderr.log"
-    $emergencyStop = $false
     try {
-        $quotedArgs = ($args | ForEach-Object {
-            $value = [string]$_
-            if ($value -match '[\s"]') { '"' + $value.Replace('"','\"') + '"' } else { $value }
-        }) -join ' '
-        $cmdLine = '/d /c ""' + $JMeter + '" ' + $quotedArgs + '"'
-        $process = Start-Process -FilePath 'cmd.exe' -ArgumentList $cmdLine -RedirectStandardOutput $consoleLog -RedirectStandardError $stderrLog -PassThru -WindowStyle Hidden
-        $lastLiveLog = Get-Date '2000-01-01'
-        while (-not $process.HasExited) {
-            Start-Sleep -Seconds 5
-            $decision = Get-LiveGateDecision -JtlPath $jtl
-            if ($decision -and ((Get-Date) - $lastLiveLog).TotalSeconds -ge 30) {
-                Write-RunLog "实时门禁：Samples=$($decision.Samples)，最近窗口失败率=$($decision.WindowRate)%"
-                $lastLiveLog = Get-Date
-            }
-            if ($decision -and $decision.Stop) {
-                $emergencyStop = $true
-                Write-RunLog "触发运行时紧急闸门：$($decision.Reason)，发送JMeter优雅停止命令。"
-                & (Join-Path $JMeterHome 'bin\shutdown.cmd') 2>&1 | Add-Content -LiteralPath $consoleLog -Encoding utf8
-                break
-            }
-        }
-        if ($emergencyStop -and -not $process.WaitForExit(120000)) {
-            Write-RunLog '优雅停止等待120秒后JMeter仍未退出；保留现场并停止继续升级。'
-        } else {
-            $process.WaitForExit()
-        }
-        $exitCode = if ($process.HasExited) { $process.ExitCode } else { 3 }
+        & $JMeter @args 2>&1 | Tee-Object -FilePath $consoleLog | Write-Host
+        $exitCode = $LASTEXITCODE
     } finally {
         Stop-ResourceMonitor -Job $monitorJob -SentinelPath $sentinel
     }
     $summary = Get-StageSummary -Stage $Stage -JtlPath $jtl -ExitCode $exitCode -MonitorPath $monitorPath
-    $summary | Add-Member -NotePropertyName EmergencyStopped -NotePropertyValue $emergencyStop -Force
     $summary | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $ResultDir "$suffix-summary.json") -Encoding utf8
-    Write-RunLog ("完成{0}：Samples={1}，成功率={2}% ，RPS={3}，P95={4}ms，P99={5}ms，429={6}，5xx={7}，实时停止={8}" -f $Stage.Name,$summary.Samples,$summary.SuccessRate,$summary.RPS,$summary.P95Ms,$summary.P99Ms,$summary.Http429,$summary.Http5xx,$emergencyStop)
+    Write-RunLog ("完成{0}：Samples={1}，成功率={2}% ，RPS={3}，P95={4}ms，P99={5}ms，429={6}，5xx={7}" -f $Stage.Name,$summary.Samples,$summary.SuccessRate,$summary.RPS,$summary.P95Ms,$summary.P99Ms,$summary.Http429,$summary.Http5xx)
     return $summary
 }
 
 function New-FinalReport {
     param([array]$Summaries, [string]$StopReason, [datetime]$EndedAt)
-    $reportPath = Join-Path $Root 'GLM-5.2性能压测报告.md'
+    $reportPath = Join-Path $Root 'KIMI-K3性能压测报告.md'
     $completed = ($Summaries | ForEach-Object Stage) -join '、'
+    $maxStable = ($Summaries | Where-Object { $_.Stage -match '^[PS]\d$' -and $_.ErrorRate -lt 1 -and $_.Http5xx -eq 0 } | ForEach-Object Threads | Measure-Object -Maximum).Maximum
+    if (-not $maxStable) { $maxStable = '尚未确定' }
     $lines = [System.Collections.Generic.List[string]]::new()
-    $lines.Add("## 运行汇总：$RunId")
+    $lines.Add('# KIMI K3 性能压测报告')
     $lines.Add('')
     $lines.Add("> 运行编号：``$RunId``  ")
     $lines.Add("> 唯一模型：``$Model``  ")
@@ -273,14 +215,15 @@ function New-FinalReport {
     $lines.Add("| 结束时间 | $($EndedAt.ToString('yyyy-MM-dd HH:mm:ss')) |")
     $lines.Add("| 完成阶段 | $completed |")
     $lines.Add("| 停止原因 | $(if($StopReason){$StopReason}else{'全部计划阶段执行完成'}) |")
-    $lines.Add('| 结果性质 | 本节为本次运行追加记录；主报告历史内容保持不变。 |')
+    $lines.Add("| 最高初步稳定并发 | $maxStable |")
+    $lines.Add('| 归因证据边界 | 当前仅采集JMeter端到端指标和压测机资源；未取得平台/供应商服务端监控，不能单独归因供应商。 |')
     $lines.Add('')
     $lines.Add('## 二、阶段结果')
     $lines.Add('')
-    $lines.Add('| 阶段 | 模式 | 目标并发 | 实际最大并发 | 并发达成率 | 样本 | 成功率 | RPS | Avg(ms) | P90 | P95 | P99 | Max | 429 | 5xx | 超时 | 重置 | SSE不完整 | 客户端CPU峰值 | 最低可用内存MB |')
-    $lines.Add('|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+    $lines.Add('| 阶段 | 模式 | 并发 | 样本 | 成功率 | RPS | Avg(ms) | P90 | P95 | P99 | Max | 429 | 5xx | 超时 | 重置 | SSE不完整 | 客户端CPU峰值 | 最低可用内存MB |')
+    $lines.Add('|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
     foreach ($s in $Summaries) {
-        $lines.Add("| $($s.Stage) | $($s.Mode) | $($s.Threads) | $($s.AchievedMaxThreads) | $($s.ConcurrencyAchievementRate)% | $($s.Samples) | $($s.SuccessRate)% | $($s.RPS) | $($s.AvgMs) | $($s.P90Ms) | $($s.P95Ms) | $($s.P99Ms) | $($s.MaxMs) | $($s.Http429) | $($s.Http5xx) | $($s.Timeouts) | $($s.Resets) | $($s.SseIncomplete) | $($s.ClientCpuPeak)% | $($s.ClientMemoryMinMB) |")
+        $lines.Add("| $($s.Stage) | $($s.Mode) | $($s.Threads) | $($s.Samples) | $($s.SuccessRate)% | $($s.RPS) | $($s.AvgMs) | $($s.P90Ms) | $($s.P95Ms) | $($s.P99Ms) | $($s.MaxMs) | $($s.Http429) | $($s.Http5xx) | $($s.Timeouts) | $($s.Resets) | $($s.SseIncomplete) | $($s.ClientCpuPeak)% | $($s.ClientMemoryMinMB) |")
     }
     $lines.Add('')
     $lines.Add('## 三、错误分类')
@@ -297,25 +240,23 @@ function New-FinalReport {
     $lines.Add('')
     $lines.Add('## 四、恢复验证')
     $lines.Add('')
-    $t0 = $Summaries | Where-Object Stage -eq 'T0-S' | Select-Object -First 1
-    $t3 = $Summaries | Where-Object Stage -eq 'T3-S' | Select-Object -First 1
+    $t0 = $Summaries | Where-Object Stage -eq 'T0' | Select-Object -First 1
+    $t3 = $Summaries | Where-Object Stage -eq 'T3' | Select-Object -First 1
     if ($t0 -and $t3) {
         $recovered = ($t3.SuccessRate -eq 100 -and $t3.P95Ms -le 1.5*$t0.P95Ms)
-        $lines.Add("T0-S P95为$($t0.P95Ms)ms，T3-S P95为$($t3.P95Ms)ms；恢复判定：$(if($recovered){'通过'}else{'未通过或需结合SLA复核'})。")
-    } else { $lines.Add('未同时完成T0-S和T3-S，无法判定高压后恢复能力。') }
+        $lines.Add("T0 P95为$($t0.P95Ms)ms，T3 P95为$($t3.P95Ms)ms；恢复判定：$(if($recovered){'通过'}else{'未通过或需结合SLA复核'})。")
+    } else { $lines.Add('未同时完成T0和T3，无法判定高压后恢复能力。') }
     $lines.Add('')
     $lines.Add('## 五、证据位置')
     $lines.Add('')
     $lines.Add("- 原始JTL：``$ResultDir``")
     $lines.Add("- JMeter HTML报告：``$HtmlDir``")
     $lines.Add("- 执行与压测机监控日志：``$LogDir``")
-    $lines.Add("- 服务端监控待补充目录：``$MonitoringDir``")
     $lines.Add('')
     $lines.Add('## 六、结论边界')
     $lines.Add('')
-    $lines.Add('本报告中的响应时间、吞吐量和错误率是“Token平台 + GLM 5.2供应商”的端到端结果。若没有平台分段耗时、连接池、数据库、计费队列和供应商上游指标，不能仅凭JMeter结果断言瓶颈一定属于平台或供应商。')
-    $existing = if (Test-Path -LiteralPath $reportPath) { Get-Content -LiteralPath $reportPath -Raw } else { '# GLM 5.2 性能压测报告' }
-    ($existing.TrimEnd() + "`r`n`r`n" + ($lines -join "`r`n") + "`r`n") | Set-Content -LiteralPath $reportPath -Encoding utf8
+    $lines.Add('本报告中的响应时间、吞吐量和错误率是“Token平台 + KIMI K3供应商”的端到端结果。若没有平台分段耗时、连接池、数据库、计费队列和供应商上游指标，不能仅凭JMeter结果断言瓶颈一定属于平台或供应商。')
+    $lines | Set-Content -LiteralPath $reportPath -Encoding utf8
     return $reportPath
 }
 
@@ -336,30 +277,16 @@ try {
     if ($modelsJson -notmatch [regex]::Escape($Model)) { throw "模型列表不包含$Model，已禁止启动压测" }
     Write-RunLog '模型列表校验通过。'
 
-    $pressureStages = @('S1','S2','S3','S4','S5')
-    $pressureStartReached = $StartAt -in @('G2','G3','T0-S','S1')
-    $skipRemainingPressure = $false
     foreach ($stage in $Stages) {
-        if ($stage.Name -in $pressureStages) {
-            if ($stage.Name -eq $StartAt) { $pressureStartReached = $true }
-            if (-not $pressureStartReached -or $skipRemainingPressure) { continue }
-        }
-        if ($PreflightOnly -and $stage.Name -notin @('G2','G3','T0-S')) { break }
+        if ($PreflightOnly -and $stage.Name -ne 'T0') { break }
         $summary = Invoke-Stage -Stage $stage
         $summaries.Add($summary)
         $summaries | Export-Csv -LiteralPath $SummaryCsv -NoTypeInformation -Encoding utf8
-        if ($stage.Name -eq 'T0-S') { $t0Summary = $summary }
+        if ($stage.Name -eq 'T0') { $t0Summary = $summary }
         $gateReasons = @(Test-StageGate -Stage $stage -Summary $summary -T0Summary $t0Summary -PreviousSummary $previousSummary)
         if ($gateReasons.Count -gt 0) {
             $stopReason = "$($stage.Name)触发停止条件：" + ($gateReasons -join '；')
             Write-RunLog $stopReason
-            if ($stage.Name -in $pressureStages -and $summary.Http401 -eq 0 -and $summary.Http403 -eq 0) {
-                $skipRemainingPressure = $true
-                $waitSeconds = [math]::Max(0, [math]::Round($stage.Cooldown * $CooldownScalePercent / 100))
-                Write-RunLog "停止升档，冷却$waitSeconds秒后仍执行T3-S恢复验证。"
-                Start-Sleep -Seconds $waitSeconds
-                continue
-            }
             break
         }
         $previousSummary = $summary
@@ -388,4 +315,3 @@ try {
 
 if ($stopReason) { exit 2 }
 exit 0
-
