@@ -1,0 +1,72 @@
+{
+  "preparedOn": "2026-10-22",
+  "sources": [
+    {
+      "end": "admin",
+      "executedOn": "2026-10-16",
+      "sourceFiles": [
+        {
+          "role": "summary",
+          "sha256": "ee476c7ecf1b756a2345acc201ec443bb48178840eacf19029238917c4513e89"
+        },
+        {
+          "role": "coverage",
+          "sha256": "15d5f95b4976d4603a68c1b8a13211e2981786e489749424eb2b62ac396a963c"
+        },
+        {
+          "role": "definitionSnapshot",
+          "sha256": "92a9ec28bc7f54b58023f0951595d0ccdce3ec320d0bc3e3017f3d4f0a4d1b25"
+        },
+        {
+          "role": "junit",
+          "sha256": "0d4fab5367d6c7c8edd779ffa48cd6f47bfa4cdb2a594fd427bda5d0331af925"
+        }
+      ]
+    },
+    {
+      "end": "supplier",
+      "executedOn": "2026-10-16",
+      "sourceFiles": [
+        {
+          "role": "summary",
+          "sha256": "67bbdcaaa9f83d08a6c00a4286992925e8f7fa24179d4ea7f6e2e308f0c7cc61"
+        },
+        {
+          "role": "coverage",
+          "sha256": "16bdf99f4969e3720774ed1e1e2d41e50ee96abaf9cdb6fc3999cd584d0ea841"
+        },
+        {
+          "role": "definitionSnapshot",
+          "sha256": "a53fd27770929ded1218fd89cb638b1456fdc82f2b47992ebdb6285baf6c3f54"
+        },
+        {
+          "role": "junit",
+          "sha256": "d3955f9d1b66adb0aa5499ecc5b4ae3f97028dbfc251fed6f2490b62c2aa6654"
+        }
+      ]
+    },
+    {
+      "end": "client",
+      "executedOn": "2026-10-19",
+      "sourceFiles": [
+        {
+          "role": "summary",
+          "sha256": "c073f265a03f4e18175cc66e23064b0a204712bae9c50839a5415617df7e8e19"
+        },
+        {
+          "role": "coverage",
+          "sha256": "315d66702048edee86287cbca30daddf2bda33c683f05d07f5526ec2756b64a8"
+        },
+        {
+          "role": "definitionSnapshot",
+          "sha256": "0a9eab50219da0f926de0dee684e20038f0b851de2656f9c241c0f9ebfe00195"
+        },
+        {
+          "role": "junit",
+          "sha256": "798abbb1053bd4d00de246b1d3699c659e5004c90f81cb5817623aad9aa41cdf"
+        }
+      ]
+    }
+  ],
+  "projection": "来源文件仅发布SHA256；其内容通过字段白名单转换后发布，未复制原始响应/凭据/请求正文。"
+}

@@ -1,0 +1,383 @@
+{
+  "format": "source-derived-structure-only",
+  "notImportableApifoxFile": true,
+  "end": "client",
+  "id": "C-SC-030",
+  "name": "P1-客户端-自建组织用户额度设置及批量分配（审计保留已授权）",
+  "executedOn": "2026-10-19",
+  "businessSteps": 37,
+  "passedSteps": 37,
+  "failedSteps": 0,
+  "steps": [
+    {
+      "number": 1,
+      "name": "验证码契约与本轮变量初始化",
+      "method": "GET",
+      "pathAlias": "/captcha/get",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 2,
+      "name": "登录独立会话：管理员账号",
+      "method": "POST",
+      "pathAlias": "/auth/login",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 3,
+      "name": "确认客户端管理员账号及组织身份",
+      "method": "GET",
+      "pathAlias": "/member/current",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 4,
+      "name": "创建本轮无菜单最小角色",
+      "method": "POST",
+      "pathAlias": "/role/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 5,
+      "name": "唯一定位本轮角色",
+      "method": "POST",
+      "pathAlias": "/role/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 6,
+      "name": "创建本轮独立顶级组织",
+      "method": "POST",
+      "pathAlias": "/organization/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 7,
+      "name": "唯一定位本轮组织",
+      "method": "POST",
+      "pathAlias": "/organization/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 8,
+      "name": "独立确认组织为本轮并且初始无用户",
+      "method": "GET",
+      "pathAlias": "/organization/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 9,
+      "name": "只在本轮组织角色下创建测试用户",
+      "method": "POST",
+      "pathAlias": "/member/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 10,
+      "name": "唯一定位本轮额度用户",
+      "method": "POST",
+      "pathAlias": "/member/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 11,
+      "name": "独立确认用户名称组织角色归属",
+      "method": "GET",
+      "pathAlias": "/member/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 12,
+      "name": "只给本轮组织设置2元月额度",
+      "method": "POST",
+      "pathAlias": "/organization-quota/set",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 13,
+      "name": "回读组织2元额度与无消费",
+      "method": "GET",
+      "pathAlias": "/organization/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 14,
+      "name": "只给本轮用户设置0.2元月额度",
+      "method": "POST",
+      "pathAlias": "/member-quota/set",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 15,
+      "name": "回读用户0.2元额度",
+      "method": "GET",
+      "pathAlias": "/member/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 16,
+      "name": "确认组织已分配最小下界0.2元",
+      "method": "GET",
+      "pathAlias": "/organization/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 17,
+      "name": "用户批量接口仅操作一个本轮用户至0.3元",
+      "method": "POST",
+      "pathAlias": "/member-quota/batchSet",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 18,
+      "name": "回读批量设置后用户0.3元",
+      "method": "GET",
+      "pathAlias": "/member/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 19,
+      "name": "通用批量接口只将本轮组织调至3元",
+      "method": "POST",
+      "pathAlias": "/quota-batch/batchSet",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 20,
+      "name": "回读组织3元及用户分配0.3元",
+      "method": "GET",
+      "pathAlias": "/organization/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 21,
+      "name": "通用批量接口只将本轮用户调至0.4元",
+      "method": "POST",
+      "pathAlias": "/quota-batch/batchSet",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 22,
+      "name": "回读通用批量后用户0.4元",
+      "method": "GET",
+      "pathAlias": "/member/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 23,
+      "name": "回读组织分配下界为0.4元",
+      "method": "GET",
+      "pathAlias": "/organization/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 24,
+      "name": "拒绝超过本轮组织3元上限的用户4元配置",
+      "method": "POST",
+      "pathAlias": "/member-quota/set",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 25,
+      "name": "确认超额拒绝后用户仍为0.4元",
+      "method": "GET",
+      "pathAlias": "/member/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 26,
+      "name": "保存本轮org额度审计用于删除后核对",
+      "method": "POST",
+      "pathAlias": "/organization-quota/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 27,
+      "name": "保存本轮user额度审计用于删除后核对",
+      "method": "POST",
+      "pathAlias": "/member-quota/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 28,
+      "name": "按依赖删除本轮user",
+      "method": "DELETE",
+      "pathAlias": "/member/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 29,
+      "name": "确认本轮user业务对象无残留",
+      "method": "POST",
+      "pathAlias": "/member/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 30,
+      "name": "按依赖删除本轮org",
+      "method": "DELETE",
+      "pathAlias": "/organization/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 31,
+      "name": "确认本轮org业务对象无残留",
+      "method": "POST",
+      "pathAlias": "/organization/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 32,
+      "name": "按依赖删除本轮role",
+      "method": "DELETE",
+      "pathAlias": "/role/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 33,
+      "name": "确认本轮role业务对象无残留",
+      "method": "POST",
+      "pathAlias": "/role/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 34,
+      "name": "用户授权保留org额度审计且金额记录不变",
+      "method": "POST",
+      "pathAlias": "/organization-quota/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 35,
+      "name": "用户授权保留user额度审计且金额记录不变",
+      "method": "POST",
+      "pathAlias": "/member-quota/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 36,
+      "name": "注销本轮独立会话",
+      "method": "POST",
+      "pathAlias": "/auth/logout",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 37,
+      "name": "确认本轮注销token已失效",
+      "method": "GET",
+      "pathAlias": "/member/current",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    }
+  ]
+}

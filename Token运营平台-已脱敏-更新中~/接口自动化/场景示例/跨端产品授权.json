@@ -1,0 +1,513 @@
+{
+  "format": "source-derived-structure-only",
+  "notImportableApifoxFile": true,
+  "end": "client",
+  "id": "C-SC-031",
+  "name": "P1-客户端-跨端自建产品组织用户授权及两端清理闭环",
+  "executedOn": "2026-10-19",
+  "businessSteps": 50,
+  "passedSteps": 50,
+  "failedSteps": 0,
+  "steps": [
+    {
+      "number": 1,
+      "name": "验证码契约与本轮变量初始化",
+      "method": "GET",
+      "pathAlias": "/captcha/get",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 2,
+      "name": "登录独立会话：管理员账号",
+      "method": "POST",
+      "pathAlias": "/auth/login",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 3,
+      "name": "确认客户端管理员账号及组织身份",
+      "method": "GET",
+      "pathAlias": "/member/current",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 4,
+      "name": "只读当前租户ID用于新产品授权范围",
+      "method": "GET",
+      "pathAlias": "/system-settings/tenant",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 5,
+      "name": "管理端独立会话登录仅用于自建产品",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/auth/login",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 6,
+      "name": "确认管理端账号身份",
+      "method": "GET",
+      "pathAlias": "/cross-end/admin/user/current",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 7,
+      "name": "管理端创建本轮无真实上游提供商",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/provider/add",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 8,
+      "name": "管理端唯一定位并确认提供商归属",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/provider/page",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 9,
+      "name": "仅在本轮提供商下创建隔离模型",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/model/add",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 10,
+      "name": "管理端确认模型名称与父提供商",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/model/page",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 11,
+      "name": "管理端创建本轮产品并绑定当前租户",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/model-product/create",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 12,
+      "name": "管理端唯一定位本轮产品",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/model-product/page",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 13,
+      "name": "管理端核对产品及指定租户归属",
+      "method": "GET",
+      "pathAlias": "/cross-end/admin/model-product/{{cli_cp_product}}",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 14,
+      "name": "本轮产品先下架以触发完整发布",
+      "method": "PUT",
+      "pathAlias": "/cross-end/admin/model-product/{{cli_cp_product}}/status/offline",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 15,
+      "name": "仅发布本轮禁用体验的隔离产品",
+      "method": "PUT",
+      "pathAlias": "/cross-end/admin/model-product/{{cli_cp_product}}/status/online",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 16,
+      "name": "客户端有界等待并确认本轮产品可见",
+      "method": "POST",
+      "pathAlias": "/tenant-product/page",
+      "kind": "endpoint",
+      "assertions": 16,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 17,
+      "name": "创建本轮USER最小角色",
+      "method": "POST",
+      "pathAlias": "/role/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 18,
+      "name": "精确定位本轮角色",
+      "method": "POST",
+      "pathAlias": "/role/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 19,
+      "name": "创建本轮授权专用组织不配置额度",
+      "method": "POST",
+      "pathAlias": "/organization/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 20,
+      "name": "精确定位本轮组织",
+      "method": "POST",
+      "pathAlias": "/organization/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 21,
+      "name": "创建本轮组织用户a",
+      "method": "POST",
+      "pathAlias": "/member/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 22,
+      "name": "唯一定位并确认本轮用户a",
+      "method": "POST",
+      "pathAlias": "/member/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 23,
+      "name": "创建本轮组织用户b",
+      "method": "POST",
+      "pathAlias": "/member/add",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 24,
+      "name": "唯一定位并确认本轮用户b",
+      "method": "POST",
+      "pathAlias": "/member/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 25,
+      "name": "只设置本轮产品ORG授权",
+      "method": "POST",
+      "pathAlias": "/tenant-product/auth",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 26,
+      "name": "客户端独立回读ORG授权范围",
+      "method": "GET",
+      "pathAlias": "/tenant-product/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 27,
+      "name": "只设置本轮产品USER授权",
+      "method": "POST",
+      "pathAlias": "/tenant-product/auth",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 28,
+      "name": "客户端独立回读USER授权范围",
+      "method": "GET",
+      "pathAlias": "/tenant-product/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 29,
+      "name": "只设置本轮产品ALL授权",
+      "method": "POST",
+      "pathAlias": "/tenant-product/auth",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 30,
+      "name": "客户端独立回读ALL授权范围",
+      "method": "GET",
+      "pathAlias": "/tenant-product/detail/{id}",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 31,
+      "name": "清理前下架仅本轮产品",
+      "method": "PUT",
+      "pathAlias": "/cross-end/admin/model-product/{{cli_cp_product}}/status/offline",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 32,
+      "name": "管理端删除仅本轮产品",
+      "method": "DELETE",
+      "pathAlias": "/cross-end/admin/model-product/{{cli_cp_product}}",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 33,
+      "name": "管理端确认本轮产品无残留",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/model-product/page",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 34,
+      "name": "客户端确认本轮产品授权对象已消失",
+      "method": "POST",
+      "pathAlias": "/tenant-product/page",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 35,
+      "name": "管理端删除仅本轮model",
+      "method": "DELETE",
+      "pathAlias": "/cross-end/admin/model/delete/{{cli_cp_model}}",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 36,
+      "name": "管理端确认本轮model无残留",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/model/page",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 37,
+      "name": "管理端删除仅本轮vendor",
+      "method": "DELETE",
+      "pathAlias": "/cross-end/admin/provider/delete/{{cli_cp_provider}}",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 38,
+      "name": "管理端确认本轮vendor无残留",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/provider/page",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 39,
+      "name": "客户端删除仅本轮user_b",
+      "method": "DELETE",
+      "pathAlias": "/member/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 40,
+      "name": "客户端删除仅本轮user_a",
+      "method": "DELETE",
+      "pathAlias": "/member/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 41,
+      "name": "客户端删除仅本轮org",
+      "method": "DELETE",
+      "pathAlias": "/organization/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 42,
+      "name": "客户端删除仅本轮role",
+      "method": "DELETE",
+      "pathAlias": "/role/delete/{id}",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 43,
+      "name": "客户端确认本轮user_b无残留",
+      "method": "POST",
+      "pathAlias": "/member/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 44,
+      "name": "客户端确认本轮user_a无残留",
+      "method": "POST",
+      "pathAlias": "/member/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 45,
+      "name": "客户端确认本轮org无残留",
+      "method": "POST",
+      "pathAlias": "/organization/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 46,
+      "name": "客户端确认本轮role无残留",
+      "method": "POST",
+      "pathAlias": "/role/page",
+      "kind": "endpoint",
+      "assertions": 4,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 47,
+      "name": "注销本轮管理端独立会话",
+      "method": "POST",
+      "pathAlias": "/cross-end/admin/auth/logout",
+      "kind": "cross-end-preparation",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 48,
+      "name": "管理端本轮注销token必须失效",
+      "method": "GET",
+      "pathAlias": "/cross-end/admin/user/current",
+      "kind": "cross-end-preparation",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 49,
+      "name": "注销本轮独立会话",
+      "method": "POST",
+      "pathAlias": "/auth/logout",
+      "kind": "endpoint",
+      "assertions": 2,
+      "failedAssertions": 0,
+      "passed": true
+    },
+    {
+      "number": 50,
+      "name": "确认本轮注销token已失效",
+      "method": "GET",
+      "pathAlias": "/member/current",
+      "kind": "endpoint",
+      "assertions": 3,
+      "failedAssertions": 0,
+      "passed": true
+    }
+  ]
+}

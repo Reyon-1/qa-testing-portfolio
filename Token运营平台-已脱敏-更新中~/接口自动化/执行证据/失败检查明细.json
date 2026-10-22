@@ -1,0 +1,92 @@
+[
+  {
+    "end": "admin",
+    "scenario": "A-SC-011",
+    "step": 6,
+    "method": "POST",
+    "pathAlias": "/dictionary/data/add",
+    "failedAssertions": 1,
+    "observed": "新增字典项返回业务500，但仍需核对是否已落库；原回归保留失败并处理自建对象清理。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "admin",
+    "scenario": "A-SC-014",
+    "step": 15,
+    "method": "POST",
+    "pathAlias": "/vendor/sync-models/{id}",
+    "failedAssertions": 1,
+    "observed": "本轮隔离上游模型同步返回业务500。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "supplier",
+    "scenario": "S-SC-002",
+    "step": 35,
+    "method": "GET",
+    "pathAlias": "/model/detail/{id}",
+    "failedAssertions": 1,
+    "observed": "跨供给方读取他方自建模型，预期拒绝，实际未按预期隔离。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "supplier",
+    "scenario": "S-SC-004",
+    "step": 14,
+    "method": "POST",
+    "pathAlias": "/vendor/sync-models/{id}",
+    "failedAssertions": 1,
+    "observed": "本轮隔离上游模型同步返回业务500。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "supplier",
+    "scenario": "S-SC-005",
+    "step": 4,
+    "method": "POST",
+    "pathAlias": "/member/create",
+    "failedAssertions": 1,
+    "observed": "文档合法性别取值创建用户返回业务500；三个独立步骤失败。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "supplier",
+    "scenario": "S-SC-005",
+    "step": 7,
+    "method": "POST",
+    "pathAlias": "/member/create",
+    "failedAssertions": 1,
+    "observed": "文档合法性别取值创建用户返回业务500；三个独立步骤失败。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "supplier",
+    "scenario": "S-SC-005",
+    "step": 10,
+    "method": "POST",
+    "pathAlias": "/member/create",
+    "failedAssertions": 1,
+    "observed": "文档合法性别取值创建用户返回业务500；三个独立步骤失败。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "client",
+    "scenario": "C-SC-022",
+    "step": 5,
+    "method": "POST",
+    "pathAlias": "/cost-dashboard-v2/costTrend",
+    "failedAssertions": 2,
+    "observed": "相同历史条件的费用趋势接口返回业务500，对照接口正常。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  },
+  {
+    "end": "client",
+    "scenario": "C-SC-024",
+    "step": 14,
+    "method": "GET",
+    "pathAlias": "/access-key/list/simple",
+    "failedAssertions": 2,
+    "observed": "有效组织条件查询简明Key列表返回参数反射错误。",
+    "status": "在所选历史回归中失败；不代表当前修复状态。"
+  }
+]
